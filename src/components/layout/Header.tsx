@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppView, SystemHealth, FounderBrainConfig } from '../../types';
-import { Sparkles, Activity, Layers, Bell } from 'lucide-react';
+import { Sparkles, Activity, Layers, Bell, LogIn, LogOut, ShieldCheck } from 'lucide-react';
+import { MAATAuthService } from '../../services/maatAuthService';
 
 interface HeaderProps {
   currentView: AppView;
@@ -13,9 +14,22 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   setCurrentView,
   systemHealth,
-  founderConfig,
   activeMissionsCount
 }) => {
+  const authService = MAATAuthService.getInstance();
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const currentUser = authService.getCurrentUser();
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsAuthenticated(false);
+  };
+
+  const handleDemoLogin = () => {
+    authService.loginAsDemoFounder();
+    setIsAuthenticated(true);
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3.5 flex items-center justify-between">
       {/* Brand & Identity */}
@@ -67,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right Controls & Health Metrics */}
-      <div className="flex items-center gap-3 md:gap-5">
+      <div className="flex items-center gap-3 md:gap-4">
         {/* System Health Metric Badge */}
         <div 
           onClick={() => setCurrentView('dashboard')}
@@ -94,23 +108,54 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500" />
         </button>
 
-        {/* Founder Profile Badge */}
-        <div 
-          onClick={() => setCurrentView('brains')}
-          className="flex items-center gap-3 pl-2 pr-3 py-1 rounded-xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all"
-        >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500/20 to-cyan-500/20 border border-amber-500/30 flex items-center justify-center text-sm font-bold text-amber-400 font-heading">
-            {founderConfig.founderName.charAt(0)}
-          </div>
-          <div className="hidden lg:block text-left">
-            <div className="text-xs font-bold text-white leading-tight">
-              {founderConfig.founderName}
+        {/* User Authentication SSO Section */}
+        {isAuthenticated && currentUser ? (
+          <div className="flex items-center gap-2">
+            <div 
+              onClick={() => setCurrentView('brains')}
+              className="flex items-center gap-3 pl-2 pr-3 py-1 rounded-xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500/20 to-cyan-500/20 border border-amber-500/30 flex items-center justify-center text-sm font-bold text-amber-400 font-heading">
+                {currentUser.displayName.charAt(0).toUpperCase()}
+              </div>
+              <div className="hidden lg:block text-left">
+                <div className="text-xs font-bold text-white leading-tight">
+                  {currentUser.displayName}
+                </div>
+                <div className="text-[10px] text-amber-400/90 font-mono-code">
+                  {currentUser.role === 'founder' ? 'Founder Brain™' : 'Membre MAAT'}
+                </div>
+              </div>
             </div>
-            <div className="text-[10px] text-amber-400/90 font-mono-code">
-              Founder Brain™
-            </div>
+
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-bold transition-all"
+              title="Se déconnecter"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <a
+              href={authService.getSSOLoginUrl()}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition-all shadow-md shadow-amber-500/20"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Connexion SSO</span>
+            </a>
+
+            <button
+              onClick={handleDemoLogin}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium transition-all"
+              title="Tester avec le compte démonstration Fondateur"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>Mode Démo</span>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
