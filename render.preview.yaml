@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: maat-studio-backend-preview
+    name: MAAT-STUDIO-IA-PREVIEW
     runtime: python
     repo: https://github.com/kyfran225/MAAT-STUDIO-IA
     branch: preview
