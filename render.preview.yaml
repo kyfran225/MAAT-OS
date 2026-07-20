@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: maat-studio-backend
+    name: maat-studio-backend-preview
     runtime: python
     repo: https://github.com/kyfran225/MAAT-STUDIO-IA
-    branch: main
+    branch: preview
     region: oregon
     plan: free
     buildCommand: "pip install -r backend/requirements.txt"
@@ -11,6 +11,6 @@ services:
     autoDeploy: true
     envVars:
       - key: ENVIRONMENT
-        value: production
+        value: preview
       - key: CORS_ORIGIN_REGEX
         value: ^https://.*\.vercel\.app$
