@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* MAATFEED Ecosystem Link Banner */}
         <a 
-          href="https://www.maatfeed.com" 
+          href={import.meta.env.VITE_MAATFEED_URL || "https://www.maatfeed.com"} 
           target="_blank" 
           rel="noopener noreferrer"
           className="block p-3.5 rounded-2xl glass-panel-gold space-y-2.5 hover:border-amber-500/50 transition-all group cursor-pointer"

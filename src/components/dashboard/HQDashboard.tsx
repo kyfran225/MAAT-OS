@@ -22,8 +22,8 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
   setCurrentView,
   onExecuteRecommendation
 }) => {
-  const activeMissions = missions.filter(m => m.status === 'active');
-  const ceoAgent = agents.find(a => a.id === 'ceo-agent') || agents[0];
+  const activeMissions = missions ? missions.filter(m => m.status === 'active') : [];
+  const ceoAgent = (agents && agents.find(a => a.id === 'ceo-agent')) || (agents && agents[0]) || { lastQuote: 'Système d\'exploitation d\'entreprise opérationnel.', name: 'CEO Agent' };
 
   return (
     <div className="space-y-6 pb-12">
@@ -44,7 +44,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-slate-300 text-sm leading-relaxed space-y-2">
               <p className="font-semibold text-amber-300">
-                "{ceoAgent.lastQuote}"
+                "{ceoAgent?.lastQuote || 'Système d\'exploitation d\'entreprise prêt.'}"
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-2">
                 <div className="flex items-center gap-2 text-emerald-400">
