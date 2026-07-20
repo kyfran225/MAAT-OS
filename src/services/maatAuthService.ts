@@ -15,12 +15,25 @@ export class MAATAuthService {
   private currentUser: MAATUserProfile;
 
   private constructor() {
+    // Check URL search parameters for SSO token or user information
+    const urlParams = new URLSearchParams(window.location.search);
+    const ssoToken = urlParams.get('sso_token') || urlParams.get('userId');
+    const email = urlParams.get('email');
+
+    if (ssoToken) {
+      localStorage.setItem('maat_sso_token', ssoToken);
+      if (email) localStorage.setItem('maat_user_email', email);
+    }
+
+    const storedToken = localStorage.getItem('maat_sso_token') || ssoToken || 'user-maat-001';
+    const storedEmail = localStorage.getItem('maat_user_email') || email || 'franck@maat-studio.ai';
+
     this.currentUser = {
-      userId: 'user-maat-001',
-      email: 'franck@maat-studio.ai',
-      displayName: 'Franck',
+      userId: storedToken,
+      email: storedEmail,
+      displayName: storedEmail.split('@')[0] || 'Fondateur',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-      maatfeedProfileId: 'maatfeed-user-franck-888',
+      maatfeedProfileId: `maatfeed-${storedToken}`,
       organizationId: 'org-maat-studio-global',
       role: 'founder',
       authProvider: 'MAAT_SSO',
@@ -39,7 +52,13 @@ export class MAATAuthService {
     return this.currentUser;
   }
 
+  public getSSOLoginUrl(): string {
+    const ssoBaseUrl = import.meta.env.VITE_MAAT_SSO_URL || 'https://www.maatfeed.com/auth';
+    const currentUrl = encodeURIComponent(window.location.origin);
+    return `${ssoBaseUrl}?redirect_to=${currentUrl}`;
+  }
+
   public verifySSOToken(): boolean {
-    return true; // Single Sign-On token valid across MAATFEED & MAAT Studio AI
+    return Boolean(localStorage.getItem('maat_sso_token') || this.currentUser.userId);
   }
 }
