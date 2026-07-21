@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --bg-obsidian: #080C14;
   --bg-surface: #0F172A;
