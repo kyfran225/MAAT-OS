@@ -13,4 +13,4 @@ services:
       - key: ENVIRONMENT
         value: preview
       - key: CORS_ORIGIN_REGEX
-        value: ^https://.*\.vercel\.app$
+        value: ^https://.*\.vercel\.app$|^https://.*\.maatfeed\.com$

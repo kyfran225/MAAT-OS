@@ -38,8 +38,20 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={() => setCurrentView('dashboard')}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200">
-            <Sparkles className="w-5 h-5 text-slate-950 stroke-[2.5]" />
+          <div className="relative w-10 h-10 rounded-xl bg-slate-900 border border-amber-500/30 p-1 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 group-hover:border-amber-500/60 transition-all duration-200 overflow-hidden">
+            <img 
+              src="/favicon/apple-touch-icon.png" 
+              alt="MAAT Logo" 
+              className="w-full h-full object-contain rounded-lg"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
+                if (fallback) (fallback as HTMLElement).style.display = 'flex';
+              }}
+            />
+            <div className="fallback-icon hidden items-center justify-center w-full h-full bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 rounded-lg">
+              <Sparkles className="w-5 h-5 text-slate-950 stroke-[2.5]" />
+            </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
