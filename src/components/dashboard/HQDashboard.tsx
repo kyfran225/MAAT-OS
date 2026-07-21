@@ -87,12 +87,12 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Health Score Card */}
         <div className="glass-panel rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span>Score de Santé Système</span>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 min-w-0">
+              <TrendingUp className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="truncate">Score de Santé Système</span>
             </h3>
-            <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap shrink-0">
               {systemHealth.overallHealth}% Global
             </span>
           </div>
@@ -124,14 +124,14 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
         {/* C-Suite Board Overview */}
         <div className="glass-panel rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-              <Users className="w-4 h-4 text-amber-400" />
-              <span>Conseil d'Administration IA</span>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 min-w-0">
+              <Users className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="truncate">Conseil d'Administration IA</span>
             </h3>
             <button 
               onClick={() => setCurrentView('agents')}
-              className="text-xs font-bold text-amber-400 hover:underline"
+              className="text-xs font-bold text-amber-400 hover:underline whitespace-nowrap shrink-0"
             >
               Voir Tout ({agents.length})
             </button>
@@ -167,12 +167,12 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         {/* Mode Simulation Quick Box */}
         <div className="glass-panel rounded-2xl p-6 space-y-4 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-cyan-400" />
-                <span>Mode Simulation™</span>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 min-w-0">
+                <Cpu className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span className="truncate">Mode Simulation™</span>
               </h3>
-              <span className="text-xs font-mono-code text-cyan-400 font-bold px-2 py-0.5 rounded bg-cyan-500/10">
+              <span className="text-xs font-mono-code text-cyan-400 font-bold px-2 py-0.5 rounded bg-cyan-500/10 whitespace-nowrap shrink-0">
                 What-If Engine
               </span>
             </div>
@@ -200,11 +200,11 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
       {/* MAATFEED Cultural Intelligence Layer Widget */}
       <section className="glass-panel-gold rounded-3xl p-6 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-bold font-heading text-white">
+              <Globe className="w-5 h-5 text-amber-400 shrink-0" />
+              <h2 className="text-base sm:text-lg font-bold font-heading text-white">
                 Passerelle MAATFEED — Human Intelligence Layer™
               </h2>
             </div>
@@ -213,7 +213,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
             </p>
           </div>
 
-          <span className="text-[10px] font-mono-code font-bold text-amber-400 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+          <span className="text-[10px] font-mono-code font-bold text-amber-400 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 whitespace-nowrap shrink-0 self-start sm:self-auto">
             ● Synchro Active
           </span>
         </div>
@@ -251,10 +251,10 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
       {/* Active Missions Section */}
       <section className="glass-panel rounded-3xl p-6 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <h2 className="text-xl font-bold font-heading text-white flex items-center gap-2">
-              <Target className="w-5 h-5 text-amber-400" />
+            <h2 className="text-lg sm:text-xl font-bold font-heading text-white flex items-center gap-2">
+              <Target className="w-5 h-5 text-amber-400 shrink-0" />
               <span>Missions™ Métiers Actives ({activeMissions.length})</span>
             </h2>
             <p className="text-xs text-slate-400">
@@ -264,10 +264,10 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
           <button
             onClick={() => setCurrentView('missions')}
-            className="text-xs font-bold text-amber-400 hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-amber-400 hover:underline flex items-center gap-1 whitespace-nowrap shrink-0 self-start sm:self-auto"
           >
-            Voir Toutes les Missions
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Voir Toutes les Missions</span>
+            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
           </button>
         </div>
 

@@ -55,10 +55,10 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-heading text-lg font-extrabold tracking-tight text-white">
+              <span className="font-heading text-base sm:text-lg font-extrabold tracking-tight text-white whitespace-nowrap">
                 MAAT STUDIO <span className="text-amber-500">AI</span>
               </span>
-              <span className="text-[10px] font-mono-code font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span className="text-[10px] font-mono-code font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 hidden sm:inline-block">
                 OS V2
               </span>
             </div>
@@ -93,11 +93,11 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right Controls & Health Metrics */}
-      <div className="flex items-center gap-3 md:gap-4">
-        {/* System Health Metric Badge */}
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        {/* System Health Metric Badge (hidden on mobile, visible on sm+) */}
         <div 
           onClick={() => setCurrentView('dashboard')}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/30 cursor-pointer transition-colors"
+          className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/30 cursor-pointer transition-colors shrink-0"
           title="Score de Santé Système Globale"
         >
           <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
@@ -112,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Notifications & System Status */}
         <button 
           onClick={() => setCurrentView('journal')}
-          className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-amber-400 hover:border-slate-700 transition-all"
+          className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-amber-400 hover:border-slate-700 transition-all shrink-0"
           title="Journal des Décisions"
         >
           <Bell className="w-4 h-4" />
@@ -122,10 +122,10 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* User Authentication SSO Section */}
         {isAuthenticated && currentUser ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <div 
               onClick={() => setCurrentView('brains')}
-              className="flex items-center gap-3 pl-2 pr-3 py-1 rounded-xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all"
+              className="flex items-center gap-3 pl-2 pr-3 py-1 rounded-xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all shrink-0"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500/20 to-cyan-500/20 border border-amber-500/30 flex items-center justify-center text-sm font-bold text-amber-400 font-heading">
                 {currentUser.displayName.charAt(0).toUpperCase()}
@@ -142,28 +142,28 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={handleLogout}
-              className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-bold transition-all"
+              className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-bold transition-all shrink-0"
               title="Se déconnecter"
             >
               <LogOut className="w-4 h-4" />
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <a
               href={authService.getSSOLoginUrl()}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition-all shadow-md shadow-amber-500/20"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition-all shadow-md shadow-amber-500/20 whitespace-nowrap shrink-0"
             >
-              <LogIn className="w-4 h-4" />
+              <LogIn className="w-4 h-4 shrink-0" />
               <span>Connexion SSO</span>
             </a>
 
             <button
               onClick={handleDemoLogin}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium transition-all whitespace-nowrap shrink-0"
               title="Tester avec le compte démonstration Fondateur"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span>Mode Démo</span>
             </button>
           </div>
