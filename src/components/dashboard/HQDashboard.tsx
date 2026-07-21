@@ -88,9 +88,9 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         {/* Health Score Card */}
         <div className="glass-panel rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 min-w-0">
+            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 leading-snug">
               <TrendingUp className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="truncate">Score de Santé Système</span>
+              <span>Score de Santé Système</span>
             </h3>
             <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap shrink-0">
               {systemHealth.overallHealth}% Global
@@ -125,9 +125,9 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         {/* C-Suite Board Overview */}
         <div className="glass-panel rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 min-w-0">
+            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 leading-snug">
               <Users className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="truncate">Conseil d'Administration IA</span>
+              <span>Conseil d'Administration IA</span>
             </h3>
             <button 
               onClick={() => setCurrentView('agents')}
@@ -168,9 +168,9 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         <div className="glass-panel rounded-2xl p-6 space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-2 mb-3">
-              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 min-w-0">
+              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 leading-snug">
                 <Cpu className="w-4 h-4 text-cyan-400 shrink-0" />
-                <span className="truncate">Mode Simulation™</span>
+                <span>Mode Simulation™</span>
               </h3>
               <span className="text-xs font-mono-code text-cyan-400 font-bold px-2 py-0.5 rounded bg-cyan-500/10 whitespace-nowrap shrink-0">
                 What-If Engine
@@ -204,11 +204,11 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-amber-400 shrink-0" />
-              <h2 className="text-base sm:text-lg font-bold font-heading text-white">
+              <h2 className="text-base sm:text-lg font-bold font-heading text-white leading-snug">
                 Passerelle MAATFEED — Human Intelligence Layer™
               </h2>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 leading-normal">
               Signaux culturels et conversations humaines captées en temps réel sur MAATFEED.
             </p>
           </div>
@@ -253,11 +253,11 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
       <section className="glass-panel rounded-3xl p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <h2 className="text-lg sm:text-xl font-bold font-heading text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold font-heading text-white flex items-center gap-2 leading-snug">
               <Target className="w-5 h-5 text-amber-400 shrink-0" />
               <span>Missions™ Métiers Actives ({activeMissions.length})</span>
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 leading-normal">
               Chaque Mission est guidée par le Moteur Cognitif et ses 6 couches fonctionnelles.
             </p>
           </div>
@@ -323,17 +323,18 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
       {/* Decision Logs Stream */}
       <section className="glass-panel rounded-3xl p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold font-heading text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-amber-400" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-base sm:text-xl font-bold font-heading text-white flex items-center gap-2 leading-snug">
+            <FileText className="w-5 h-5 text-amber-400 shrink-0" />
             <span>Journal de Bord Temps Réel (Décisions IA)</span>
           </h2>
 
           <button
             onClick={() => setCurrentView('journal')}
-            className="text-xs font-bold text-amber-400 hover:underline"
+            className="text-xs font-bold text-amber-400 hover:underline flex items-center gap-1 whitespace-nowrap shrink-0 self-start sm:self-auto"
           >
-            Ouvrir le Journal Complet
+            <span>Ouvrir le Journal Complet</span>
+            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
           </button>
         </div>
 
@@ -343,11 +344,11 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
               key={log.id}
               className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
             >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono-code text-slate-500">{log.timestamp}</span>
-                  <span className="text-xs font-bold text-amber-400">{log.agentName}</span>
-                  <span className="text-[10px] font-mono-code px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+              <div className="space-y-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-mono-code text-slate-500 whitespace-nowrap">{log.timestamp}</span>
+                  <span className="text-xs font-bold text-amber-400 whitespace-nowrap">{log.agentName}</span>
+                  <span className="text-[10px] font-mono-code px-2 py-0.5 rounded bg-slate-800 text-slate-400 whitespace-nowrap shrink-0">
                     {log.category}
                   </span>
                 </div>
@@ -356,7 +357,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
+                <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap shrink-0">
                   {log.confidenceScore}% Confiance
                 </span>
               </div>
