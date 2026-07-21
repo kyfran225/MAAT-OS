@@ -77,6 +77,7 @@ export const SAMPLE_SOURCES: IngestedSource[] = [
 
 export const SmartIngestionCenter: React.FC = () => {
   const [sources, setSources] = useState<IngestedSource[]>([]);
+  const [connectingType, setConnectingType] = useState<string | null>(null);
 
   const handleLoadDemoData = () => {
     setSources(SAMPLE_SOURCES);
@@ -84,24 +85,79 @@ export const SmartIngestionCenter: React.FC = () => {
 
   const [isProcessingNew, setIsProcessingNew] = useState(false);
 
-  const handleSimulateDrop = () => {
+  const handleConnectorAction = (type: IngestedSource['type'] | 'folder') => {
+    if (isProcessingNew || connectingType) return;
+
+    setConnectingType(type);
     setIsProcessingNew(true);
+
     setTimeout(() => {
-      const newSource: IngestedSource = {
-        id: `src-${Date.now()}`,
-        name: 'Dossier_Nouveaux_Devis_et_Contrats.zip',
-        type: 'cloud',
-        size: '5.2 MB',
-        status: 'indexed',
-        extractedBrain: 'Company Brain',
-        extractedInsights: [
-          '8 nouveaux modèles de devis analysés et indexés.',
-          'Clauses de garantie 30 jours enregistrées par le Cerveau.'
-        ]
-      };
-      setSources([newSource, ...sources]);
+      let newSource: IngestedSource;
+
+      switch(type) {
+        case 'whatsapp':
+          newSource = {
+            id: `src-wa-${Date.now()}`,
+            name: 'Flux_WhatsApp_Business_Live.stream',
+            type: 'whatsapp',
+            size: 'En continu',
+            status: 'indexed',
+            extractedBrain: 'Customer Brain',
+            extractedInsights: [
+              'Analyse en temps réel de 45 conversations actives.',
+              'Sentiment client global : Très Positif (8.4/10).'
+            ]
+          };
+          break;
+        case 'email':
+          newSource = {
+            id: `src-mail-${Date.now()}`,
+            name: 'Archive_Outlook_Négociations_Ventes.eml',
+            type: 'email',
+            size: '12.4 MB',
+            status: 'indexed',
+            extractedBrain: 'Company Brain',
+            extractedInsights: [
+              'Extraction de 12 cycles de vente en cours.',
+              'Détection automatique des dates d\'échéance des contrats.'
+            ]
+          };
+          break;
+        case 'cloud':
+          newSource = {
+            id: `src-cloud-${Date.now()}`,
+            name: 'Google_Drive_Synchronisation_PME.sync',
+            type: 'cloud',
+            size: '450 MB',
+            status: 'indexed',
+            extractedBrain: 'Knowledge Graph',
+            extractedInsights: [
+              'Indexation de 1,200 documents via le Knowledge Graph.',
+              'Cartographie sémantique du département Opérations terminée.'
+            ]
+          };
+          // Cast to any because the interface expects specific brains, but Knowledge Graph fits the context
+          (newSource as any).extractedBrain = 'Company Brain';
+          break;
+        default:
+          newSource = {
+            id: `src-zip-${Date.now()}`,
+            name: 'Dossier_Nouveaux_Devis_et_Contrats.zip',
+            type: 'cloud',
+            size: '5.2 MB',
+            status: 'indexed',
+            extractedBrain: 'Company Brain',
+            extractedInsights: [
+              '8 nouveaux modèles de devis analysés et indexés.',
+              'Clauses de garantie 30 jours enregistrées par le Cerveau.'
+            ]
+          };
+      }
+
+      setSources(prev => [newSource, ...prev]);
       setIsProcessingNew(false);
-    }, 2000);
+      setConnectingType(null);
+    }, 1500);
   };
 
   return (
@@ -122,11 +178,11 @@ export const SmartIngestionCenter: React.FC = () => {
         </div>
 
         <button
-          onClick={handleSimulateDrop}
+          onClick={() => handleConnectorAction('folder')}
           disabled={isProcessingNew}
           className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs hover:brightness-110 flex items-center gap-2 shrink-0 shadow-lg shadow-amber-500/20 disabled:opacity-50"
         >
-          {isProcessingNew ? (
+          {isProcessingNew && connectingType === 'folder' ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
               <span>Analyse RAG en cours...</span>
@@ -144,15 +200,15 @@ export const SmartIngestionCenter: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Connector 1: Local / Cloud Folders */}
         <div 
-          onClick={handleSimulateDrop}
-          className="p-5 rounded-2xl bg-slate-900/90 border border-amber-500/30 hover:border-amber-500 transition-all cursor-pointer space-y-3 group"
+          onClick={() => handleConnectorAction('folder')}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${connectingType === 'folder' ? 'border-amber-500 ring-1 ring-amber-500/50' : 'border-amber-500/30 hover:border-amber-500'}`}
         >
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
-              <FolderUp className="w-5 h-5" />
+              {connectingType === 'folder' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <FolderUp className="w-5 h-5" />}
             </div>
             <span className="text-[10px] font-mono-code font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              Actif
+              {connectingType === 'folder' ? 'Analyse...' : 'Actif'}
             </span>
           </div>
           <div>
@@ -164,22 +220,22 @@ export const SmartIngestionCenter: React.FC = () => {
             </p>
           </div>
           <div className="text-[11px] text-amber-400 flex items-center gap-1 font-bold pt-1">
-            <span>Glisser-déposer un dossier</span>
+            <span>{connectingType === 'folder' ? 'Calcul sémantique...' : 'Glisser-déposer un dossier'}</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
 
         {/* Connector 2: WhatsApp Business API */}
         <div 
-          onClick={handleSimulateDrop}
-          className="p-5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 hover:border-emerald-500 transition-all cursor-pointer space-y-3 group"
+          onClick={() => handleConnectorAction('whatsapp')}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${connectingType === 'whatsapp' ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-emerald-500/30 hover:border-emerald-500'}`}
         >
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
-              <MessageSquare className="w-5 h-5" />
+              {connectingType === 'whatsapp' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <MessageSquare className="w-5 h-5" />}
             </div>
             <span className="text-[10px] font-mono-code font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              Synchronisé
+              {connectingType === 'whatsapp' ? 'OAuth...' : 'Synchronisé'}
             </span>
           </div>
           <div>
@@ -191,22 +247,22 @@ export const SmartIngestionCenter: React.FC = () => {
             </p>
           </div>
           <div className="text-[11px] text-emerald-400 flex items-center gap-1 font-bold pt-1">
-            <span>Customer Brain alimenté</span>
+            <span>{connectingType === 'whatsapp' ? 'Authentification Meta...' : 'Customer Brain alimenté'}</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
 
         {/* Connector 3: Emails (Gmail / Outlook) */}
         <div 
-          onClick={handleSimulateDrop}
-          className="p-5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 hover:border-cyan-500 transition-all cursor-pointer space-y-3 group"
+          onClick={() => handleConnectorAction('email')}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${connectingType === 'email' ? 'border-cyan-500 ring-1 ring-cyan-500/50' : 'border-cyan-500/30 hover:border-cyan-500'}`}
         >
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <Mail className="w-5 h-5" />
+              {connectingType === 'email' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
             </div>
             <span className="text-[10px] font-mono-code font-bold text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-              Connecté
+              {connectingType === 'email' ? 'OAuth...' : 'Connecté'}
             </span>
           </div>
           <div>
@@ -218,22 +274,22 @@ export const SmartIngestionCenter: React.FC = () => {
             </p>
           </div>
           <div className="text-[11px] text-cyan-400 flex items-center gap-1 font-bold pt-1">
-            <span>Extraction du ton & prix</span>
+            <span>{connectingType === 'email' ? 'Synchronisation IMAP...' : 'Extraction du ton & prix'}</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
 
         {/* Connector 4: Cloud Drives */}
         <div 
-          onClick={handleSimulateDrop}
-          className="p-5 rounded-2xl bg-slate-900/90 border border-purple-500/30 hover:border-purple-500 transition-all cursor-pointer space-y-3 group"
+          onClick={() => handleConnectorAction('cloud')}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${connectingType === 'cloud' ? 'border-purple-500 ring-1 ring-purple-500/50' : 'border-purple-500/30 hover:border-purple-500'}`}
         >
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
-              <Cloud className="w-5 h-5" />
+              {connectingType === 'cloud' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Cloud className="w-5 h-5" />}
             </div>
             <span className="text-[10px] font-mono-code font-bold text-purple-400 px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
-              Google Drive / OneDrive
+              {connectingType === 'cloud' ? 'OAuth...' : 'Google Drive / OneDrive'}
             </span>
           </div>
           <div>
@@ -245,11 +301,12 @@ export const SmartIngestionCenter: React.FC = () => {
             </p>
           </div>
           <div className="text-[11px] text-purple-400 flex items-center gap-1 font-bold pt-1">
-            <span>Knowledge Graph vivant</span>
+            <span>{connectingType === 'cloud' ? 'Exploration Drive...' : 'Knowledge Graph vivant'}</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
       </div>
+
 
       {/* Ingestion & RAG Results List */}
       <div className="space-y-4 pt-2">
