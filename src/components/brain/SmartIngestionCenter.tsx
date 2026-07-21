@@ -13,6 +13,7 @@ import {
   ArrowRight,
   RefreshCw
 } from 'lucide-react';
+import { knowledgeGraphService } from '../../services/knowledgeGraphService';
 
 interface IngestedSource {
   id: string;
@@ -149,6 +150,7 @@ export const SmartIngestionCenter: React.FC = () => {
                 ]
               };
               setSources(prev => [newSource, ...prev]);
+              knowledgeGraphService.addNodeFromSource(newSource);
               setIsProcessingNew(false);
               setConnectingType(null);
             }, 1000);
@@ -245,6 +247,7 @@ export const SmartIngestionCenter: React.FC = () => {
       });
 
       setSources(prev => [...newEntries, ...prev]);
+      newEntries.forEach(entry => knowledgeGraphService.addNodeFromSource(entry));
       setIsProcessingNew(false);
       setActiveContext(null);
       if (fileInputRef.current) fileInputRef.current.value = ''; // Reset input

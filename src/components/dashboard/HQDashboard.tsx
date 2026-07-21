@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SystemHealth, Mission, DecisionLog, Agent, AppView } from '../../types';
-import { Target, Users, Cpu, FileText, CheckCircle2, AlertTriangle, ArrowRight, ShieldCheck, Flame, PlusCircle, TrendingUp, Globe, Sparkles } from 'lucide-react';
+import { Target, Users, Cpu, FileText, CheckCircle2, AlertTriangle, ArrowRight, ShieldCheck, Flame, PlusCircle, TrendingUp, Globe, Sparkles, Database, Wallet } from 'lucide-react';
 import { MAATFEEDIntelligenceService } from '../../services/maatfeedIntelligenceService';
 import { MAATAuthService } from '../../services/maatAuthService';
+import { knowledgeGraphService } from '../../services/knowledgeGraphService';
 
 interface HQDashboardProps {
   systemHealth: SystemHealth;
@@ -23,6 +24,17 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
   setCurrentView,
   onExecuteRecommendation
 }) => {
+  const [ingestedAssets, setIngestedAssets] = useState<{ id: string; name: string; type: string }[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = knowledgeGraphService.subscribe((newNode) => {
+      if (newNode.category === 'document') {
+        setIngestedAssets(prev => [{ id: newNode.id, name: newNode.label, type: newNode.type }, ...prev].slice(0, 5));
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const authService = MAATAuthService.getInstance();
   const isAuthenticated = authService.isAuthenticated();
   const currentUser = authService.getCurrentUser();
@@ -208,6 +220,49 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
             className="w-full mt-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-cyan-500 text-cyan-400 font-bold text-xs transition-colors flex items-center justify-center gap-2"
           >
             <span>Accéder aux Simulations</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Finance OS / Ingested Assets Quick View */}
+        <div className="glass-panel rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h3 className="font-heading font-bold text-sm xl:text-base text-white flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <Wallet className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Finance OS & Actifs</span>
+              </h3>
+              <span className="text-[10px] font-mono-code text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 whitespace-nowrap shrink-0">
+                ACTIFS RÉELS
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Derniers documents financiers et légaux ingérés par le Multi-Brain System.
+            </p>
+
+            <div className="mt-4 space-y-2">
+              {ingestedAssets.length > 0 ? ingestedAssets.map((asset) => (
+                <div key={asset.id} className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[10px] flex items-center justify-between group">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Database className="w-3 h-3 text-slate-500 shrink-0" />
+                    <span className="text-slate-300 truncate font-bold">{asset.name}</span>
+                  </div>
+                  <span className="text-emerald-500/70 font-mono-code shrink-0 uppercase">{asset.type.split(' ')[0]}</span>
+                </div>
+              )) : (
+                <div className="p-3 rounded-xl bg-slate-950/40 border border-dashed border-slate-800 text-[10px] text-slate-500 text-center">
+                  Aucun actif financier ingéré aujourd'hui.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={() => setCurrentView('brain')}
+            className="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition-all flex items-center justify-center gap-2"
+          >
+            <span>Explorer le Multi-Brain</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

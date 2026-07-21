@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Agent } from '../../types';
-import { Users, MessageSquare, Send, Cpu } from 'lucide-react';
+import { Users, MessageSquare, Send, Cpu, Sparkles, Target, ArrowRight } from 'lucide-react';
 import { BackendService } from '../../services/backendService';
+import { knowledgeGraphService } from '../../services/knowledgeGraphService';
 
 interface BoardViewProps {
   agents: Agent[];
@@ -18,6 +19,22 @@ export const BoardView: React.FC<BoardViewProps> = ({
   const [debateLog, setDebateLog] = useState<{ agent: string; message: string; confidence: number }[] | null>(null);
   const [finalDecision, setFinalDecision] = useState<string | null>(null);
   const [isLiveApi, setIsLiveApi] = useState<boolean>(false);
+  const [suggestions, setSuggestions] = useState<{ id: string; title: string; reason: string }[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = knowledgeGraphService.subscribe((newNode) => {
+      // Proactively suggest a mission based on the new knowledge node
+      if (newNode.category === 'document' || newNode.category === 'contact') {
+        const newSuggestion = {
+          id: `suggest-${Date.now()}`,
+          title: `Mission : Exploiter ${newNode.label}`,
+          reason: `Nouvelle connaissance détectée : ${newNode.details.keyAttributes[0] || 'Analyse sémantique disponible'}.`
+        };
+        setSuggestions(prev => [newSuggestion, ...prev].slice(0, 3));
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleRunDebate = async () => {
     if (!debateTopic.trim()) return;
@@ -83,6 +100,31 @@ export const BoardView: React.FC<BoardViewProps> = ({
           <span>Simuler Débat du Conseil</span>
         </button>
       </div>
+
+      {/* Proactive Suggestions Section */}
+      {suggestions.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+          {suggestions.map((sug) => (
+            <div key={sug.id} className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col justify-between gap-3 group">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-amber-400 uppercase tracking-tighter">
+                  <Sparkles className="w-3 h-3" />
+                  <span>Suggestion Proactive IA</span>
+                </div>
+                <h4 className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">{sug.title}</h4>
+                <p className="text-[10px] text-slate-400 leading-tight">{sug.reason}</p>
+              </div>
+              <button
+                onClick={() => setDebateTopic(sug.title)}
+                className="flex items-center gap-1 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                <span>Soumettre au Conseil</span>
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Grid: Agents Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

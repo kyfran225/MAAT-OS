@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Network, 
   Search, 
@@ -13,6 +13,7 @@ import {
   Zap,
   Layers
 } from 'lucide-react';
+import { knowledgeGraphService } from '../../services/knowledgeGraphService';
 
 export interface GraphNode {
   id: string;
@@ -190,6 +191,18 @@ export const SAMPLE_GRAPH_NODES: GraphNode[] = [
 export const KnowledgeGraphExplorer: React.FC = () => {
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = knowledgeGraphService.subscribe((newNode) => {
+      setNodes(prev => {
+        // Prevent duplicate nodes if same source ID
+        if (prev.find(n => n.id === newNode.id)) return prev;
+        return [newNode, ...prev];
+      });
+      setSelectedNode(newNode);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleLoadDemoGraph = () => {
     setNodes(SAMPLE_GRAPH_NODES);
