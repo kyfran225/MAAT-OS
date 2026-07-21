@@ -25,7 +25,12 @@ export class MAATAuthService {
 
     if (ssoToken) {
       localStorage.setItem('maat_sso_token', ssoToken);
-      if (email) localStorage.setItem('maat_user_email', email);
+      if (email) {
+        localStorage.setItem('maat_user_email', email);
+      }
+      // Clean up SSO token and email parameters from browser address bar (security best practice)
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
     }
 
     const storedToken = localStorage.getItem('maat_sso_token');
