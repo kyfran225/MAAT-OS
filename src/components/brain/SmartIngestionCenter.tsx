@@ -81,6 +81,7 @@ export const SmartIngestionCenter: React.FC = () => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [activeContext, setActiveContext] = useState<IngestedSource['type'] | 'folder' | null>(null);
   const [oauthError, setOauthError] = useState<string | null>(null);
+  const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
 
   const handleLoadDemoData = () => {
     // Cumulative: append demo data instead of replacing
@@ -93,6 +94,7 @@ export const SmartIngestionCenter: React.FC = () => {
   const handleGoogleOAuth = (type: 'email' | 'cloud') => {
     const clientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID;
     setOauthError(null);
+    setShowOptionsFor(null);
 
     if (!clientId || clientId === 'YOUR_GOOGLE_CLIENT_ID') {
       setOauthError("Client ID Google non configuré. Passage en mode simulation.");
@@ -185,6 +187,7 @@ export const SmartIngestionCenter: React.FC = () => {
 
   const triggerFilePicker = (context: IngestedSource['type'] | 'folder') => {
     setActiveContext(context);
+    setShowOptionsFor(null);
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -261,6 +264,11 @@ export const SmartIngestionCenter: React.FC = () => {
     handleConnectorAction('folder');
   };
 
+  const toggleOptions = (id: string) => {
+    if (showOptionsFor === id) setShowOptionsFor(null);
+    else setShowOptionsFor(id);
+  };
+
   return (
     <div className="glass-panel p-6 lg:p-8 rounded-3xl space-y-6">
       {/* Hidden File Input for Multi-Source Ingestion */}
@@ -327,7 +335,7 @@ export const SmartIngestionCenter: React.FC = () => {
         {/* Connector 1: Local / Cloud Folders */}
         <div
           onClick={() => handleConnectorAction('folder')}
-          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${activeContext === 'folder' ? 'border-amber-500 ring-1 ring-amber-500/50' : 'border-amber-500/30 hover:border-amber-500'}`}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group relative ${activeContext === 'folder' ? 'border-amber-500 ring-1 ring-amber-500/50' : 'border-amber-500/30 hover:border-amber-500'}`}
         >
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
@@ -353,9 +361,25 @@ export const SmartIngestionCenter: React.FC = () => {
 
         {/* Connector 2: WhatsApp Business API */}
         <div
-          onClick={() => handleConnectorAction('whatsapp')}
-          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${activeContext === 'whatsapp' ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-emerald-500/30 hover:border-emerald-500'}`}
+          onClick={() => toggleOptions('whatsapp')}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group relative ${activeContext === 'whatsapp' ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-emerald-500/30 hover:border-emerald-500'}`}
         >
+          {showOptionsFor === 'whatsapp' && (
+            <div className="absolute inset-0 z-10 bg-slate-950/95 rounded-2xl p-4 flex flex-col justify-center gap-2 border border-emerald-500 animate-in fade-in zoom-in duration-200">
+              <button
+                onClick={(e) => { e.stopPropagation(); triggerFilePicker('whatsapp'); }}
+                className="w-full py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-xl text-[11px] font-bold border border-emerald-500/30"
+              >
+                Importer Export (.zip)
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowOptionsFor(null); }}
+                className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl text-[11px] font-bold border border-slate-800"
+              >
+                Connecter API (Bientôt)
+              </button>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
               {isProcessingNew && activeContext === 'whatsapp' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <MessageSquare className="w-5 h-5" />}
@@ -373,16 +397,32 @@ export const SmartIngestionCenter: React.FC = () => {
             </p>
           </div>
           <div className="text-[11px] text-emerald-400 flex items-center gap-1 font-bold pt-1">
-            <span>{isProcessingNew && activeContext === 'whatsapp' ? 'Traitement conversationnel...' : 'Importer un export de chat'}</span>
+            <span>{isProcessingNew && activeContext === 'whatsapp' ? 'Traitement conversationnel...' : 'Choisir la méthode'}</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
 
         {/* Connector 3: Emails (Gmail / Outlook) */}
         <div
-          onClick={() => handleConnectorAction('email')}
-          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${activeContext === 'email' ? 'border-cyan-500 ring-1 ring-cyan-500/50' : 'border-cyan-500/30 hover:border-cyan-500'}`}
+          onClick={() => toggleOptions('email')}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group relative ${activeContext === 'email' ? 'border-cyan-500 ring-1 ring-cyan-500/50' : 'border-cyan-500/30 hover:border-cyan-500'}`}
         >
+          {showOptionsFor === 'email' && (
+            <div className="absolute inset-0 z-10 bg-slate-950/95 rounded-2xl p-4 flex flex-col justify-center gap-2 border border-cyan-500 animate-in fade-in zoom-in duration-200">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleGoogleOAuth('email'); }}
+                className="w-full py-2 bg-cyan-500 text-slate-950 hover:brightness-110 rounded-xl text-[11px] font-bold"
+              >
+                Connecter via Google
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); triggerFilePicker('email'); }}
+                className="w-full py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-xl text-[11px] font-bold border border-cyan-500/30"
+              >
+                Importer Archive (.eml)
+              </button>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400">
               {isProcessingNew && activeContext === 'email' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
@@ -400,16 +440,32 @@ export const SmartIngestionCenter: React.FC = () => {
             </p>
           </div>
           <div className="text-[11px] text-cyan-400 flex items-center gap-1 font-bold pt-1">
-            <span>{isProcessingNew && activeContext === 'email' ? 'Analyse des échanges...' : 'Déposer une archive email'}</span>
+            <span>{isProcessingNew && activeContext === 'email' ? 'Analyse des échanges...' : 'Choisir la méthode'}</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
 
         {/* Connector 4: Cloud Drives */}
         <div
-          onClick={() => handleConnectorAction('cloud')}
-          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group ${activeContext === 'cloud' ? 'border-purple-500 ring-1 ring-purple-500/50' : 'border-purple-500/30 hover:border-purple-500'}`}
+          onClick={() => toggleOptions('cloud')}
+          className={`p-5 rounded-2xl bg-slate-900/90 border transition-all cursor-pointer space-y-3 group relative ${activeContext === 'cloud' ? 'border-purple-500 ring-1 ring-purple-500/50' : 'border-purple-500/30 hover:border-purple-500'}`}
         >
+          {showOptionsFor === 'cloud' && (
+            <div className="absolute inset-0 z-10 bg-slate-950/95 rounded-2xl p-4 flex flex-col justify-center gap-2 border border-purple-500 animate-in fade-in zoom-in duration-200">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleGoogleOAuth('cloud'); }}
+                className="w-full py-2 bg-purple-500 text-white hover:brightness-110 rounded-xl text-[11px] font-bold"
+              >
+                Sync Google Drive
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); triggerFilePicker('cloud'); }}
+                className="w-full py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-xl text-[11px] font-bold border border-purple-500/30"
+              >
+                Importer Archive (.zip)
+              </button>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
               {isProcessingNew && activeContext === 'cloud' ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Cloud className="w-5 h-5" />}
@@ -427,7 +483,7 @@ export const SmartIngestionCenter: React.FC = () => {
             </p>
           </div>
           <div className="text-[11px] text-purple-400 flex items-center gap-1 font-bold pt-1">
-            <span>{isProcessingNew && activeContext === 'cloud' ? 'Indexation massive...' : 'Connecter ou Importer'}</span>
+            <span>{isProcessingNew && activeContext === 'cloud' ? 'Indexation massive...' : 'Choisir la méthode'}</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
