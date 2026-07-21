@@ -1,6 +1,6 @@
-import sqlite3
-import json
 import os
+import uuid
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "maat_studio.db")
@@ -34,6 +34,9 @@ class UserStore:
                     ingested_sources TEXT DEFAULT '[]',
                     autopilot_settings TEXT DEFAULT '{}',
                     autopilot_activity TEXT DEFAULT '[]',
+                    finance_stats TEXT DEFAULT '{"total_cost": 0, "total_revenue": 0, "events": []}',
+                    market_signals TEXT DEFAULT '[]',
+                    hr_data TEXT DEFAULT '{"jobs": [], "candidates": [], "onboarding_plans": []}',
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -52,6 +55,12 @@ class UserStore:
                 cursor.execute("ALTER TABLE user_data ADD COLUMN autopilot_settings TEXT DEFAULT '{}'")
             if "autopilot_activity" not in columns:
                 cursor.execute("ALTER TABLE user_data ADD COLUMN autopilot_activity TEXT DEFAULT '[]'")
+            if "finance_stats" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN finance_stats TEXT DEFAULT '{\"total_cost\": 0, \"total_revenue\": 0, \"events\": []}'")
+            if "market_signals" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN market_signals TEXT DEFAULT '[]'")
+            if "hr_data" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN hr_data TEXT DEFAULT '{\"jobs\": [], \"candidates\": [], \"onboarding_plans\": []}'")
             conn.commit()
 
     def get_or_create_user_data(self, user_id: str) -> Dict[str, Any]:
@@ -75,6 +84,9 @@ class UserStore:
                     "ingested_sources": json.loads(row["ingested_sources"]) if "ingested_sources" in row.keys() and row["ingested_sources"] else [],
                     "autopilot_settings": json.loads(row["autopilot_settings"]) if "autopilot_settings" in row.keys() and row["autopilot_settings"] else {},
                     "autopilot_activity": json.loads(row["autopilot_activity"]) if "autopilot_activity" in row.keys() and row["autopilot_activity"] else [],
+                    "finance_stats": json.loads(row["finance_stats"]) if "finance_stats" in row.keys() and row["finance_stats"] else {"total_cost": 0, "total_revenue": 0, "events": []},
+                    "market_signals": json.loads(row["market_signals"]) if "market_signals" in row.keys() and row["market_signals"] else [],
+                    "hr_data": json.loads(row["hr_data"]) if "hr_data" in row.keys() and row["hr_data"] else {"jobs": [], "candidates": [], "onboarding_plans": []},
                 }
 
             # Create initial default data for new user
@@ -447,5 +459,27 @@ class UserStore:
 
     def update_crm_contacts(self, user_id: str, contacts: List[Dict[str, Any]]):
         self.save_user_field(user_id, "crm_contacts", contacts)
+
+    def add_finance_event(self, user_id: str, event_type: str, title: str, amount: float, is_cost: bool):
+        stats = self.get_or_create_user_data(user_id).get("finance_stats", {"total_cost": 0, "total_revenue": 0, "events": []})
+
+        event = {
+            "id": f"fin-{uuid.uuid4().hex[:6]}",
+            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+            "type": event_type,
+            "title": title,
+            "amount": amount,
+            "is_cost": is_cost
+        }
+
+        if is_cost:
+            stats["total_cost"] += amount
+        else:
+            stats["total_revenue"] += amount
+
+        stats["events"].insert(0, event)
+        stats["events"] = stats["events"][:50] # Keep last 50 events
+
+        self.save_user_field(user_id, "finance_stats", stats)
 
 user_store = UserStore()

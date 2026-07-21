@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppView, Mission, DecisionLog, SimulationScenario, FounderBrainConfig, CompanyBrainConfig, SystemHealth, Agent, CRMContact, CRMContactStatus } from './types';
+import { AppView, Mission, DecisionLog, SimulationScenario, FounderBrainConfig, CompanyBrainConfig, SystemHealth, Agent, CRMContact, CRMContactStatus, FinanceStats, MarketSignal, Competitor, HRData } from './types';
 import { MAATAuthService, isRealName } from './services/maatAuthService';
 
 import { Header } from './components/layout/Header';
@@ -22,6 +22,9 @@ import { DeepRAGChat } from './components/brain/DeepRAGChat';
 import { KnowledgeGraphExplorer } from './components/graph/KnowledgeGraphExplorer';
 import { ConnectorSettings } from './components/settings/ConnectorSettings';
 import { AutopilotSettings } from './components/settings/AutopilotSettings';
+import { FinanceOSModule } from './components/finance/FinanceOSModule';
+import { MarketBrainModule } from './components/market/MarketBrainModule';
+import { HROSModule } from './components/hr/HROSModule';
 
 import { BackendService } from './services/backendService';
 import { INITIAL_AGENTS, INITIAL_CRM_CONTACTS, DEMO_DATASET } from './data/mockData';
@@ -75,6 +78,8 @@ export const App: React.FC = () => {
   const [companyConfig, setCompanyConfig] = useState<CompanyBrainConfig>(DEFAULT_GUEST_COMPANY);
   const [crmContacts, setCrmContacts] = useState<CRMContact[]>(INITIAL_CRM_CONTACTS);
   const [isAutopilotEnabled, setIsAutopilotEnabled] = useState(false);
+  const [financeStats, setFinanceStats] = useState<FinanceStats>({ total_cost: 0, total_revenue: 0, events: [] });
+  const [hrData, setHrData] = useState<HRData>({ jobs: [], candidates: [], onboarding_plans: [] });
 
   // Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -134,6 +139,8 @@ export const App: React.FC = () => {
       if (data.company_brain) setCompanyConfig(data.company_brain);
       if (data.crm_contacts) setCrmContacts(data.crm_contacts);
       if (data.autopilot_settings) setIsAutopilotEnabled(data.autopilot_settings.enabled || false);
+      if (data.finance_stats) setFinanceStats(data.finance_stats);
+      if (data.hr_data) setHrData(data.hr_data);
     } else if (currentUser.userId !== 'user-demo') {
       setSystemHealth(DEFAULT_GUEST_HEALTH);
       setMissions([]);
@@ -292,6 +299,9 @@ export const App: React.FC = () => {
 
   const handleBoardDebateTriggered = async (_topic: string) => {
     await loadUserData();
+    // Refresh finance stats after a debate (cost incurred)
+    const stats = await BackendService.getInstance().getFinanceStats();
+    if (stats) setFinanceStats(stats);
   };
 
   const handleExecuteRecommendation = (recommendationTitle: string) => {
@@ -310,8 +320,18 @@ export const App: React.FC = () => {
     setCrmContacts([contact, ...crmContacts]);
   };
 
-  const handleUpdateContactStatus = (id: string, newStatus: CRMContactStatus) => {
-    setCrmContacts(crmContacts.map(c => c.id === id ? { ...c, status: newStatus } : c));
+  const handleUpdateContactStatus = async (id: string, newStatus: CRMContactStatus) => {
+    const updated = await BackendService.getInstance().updateCRMContactStatus(id, newStatus);
+    if (updated) {
+      setCrmContacts(crmContacts.map(c => c.id === id ? updated : c));
+      // Refresh finance stats if status changed to client
+      if (newStatus === 'client') {
+        const stats = await BackendService.getInstance().getFinanceStats();
+        if (stats) setFinanceStats(stats);
+      }
+    } else {
+      setCrmContacts(crmContacts.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    }
   };
 
   const activeMissionsCount = missions.filter(m => m.status === 'active').length;
@@ -374,6 +394,7 @@ export const App: React.FC = () => {
               onOpenCreateMission={() => setIsCreateModalOpen(true)}
               setCurrentView={setCurrentView}
               onExecuteRecommendation={handleExecuteRecommendation}
+              financeStats={financeStats}
             />
           )}
 
@@ -486,6 +507,59 @@ export const App: React.FC = () => {
 
           {currentView === 'autopilot' && (
             <AutopilotSettings onToggle={(enabled) => setIsAutopilotEnabled(enabled)} />
+          )}
+
+          {currentView === 'finance_os' && (
+            <FinanceOSModule stats={financeStats} />
+          )}
+
+          {currentView === 'market_brain' && (
+            <MarketBrainModule
+              companyConfig={companyConfig}
+              onAddMission={(title, objective) => handleCreateMission({
+                title,
+                category: 'strategy',
+                target: `Réponse offensive à ${title}`,
+                budget: 10000,
+                timeline: '30 Jours',
+                objective,
+                constraints: ['Budget limité', 'Alignement Founder Brain']
+              })}
+            />
+          )}
+
+          {currentView === 'hr_os' && (
+            <HROSModule
+              hrData={hrData}
+              founderConfig={founderConfig}
+              onCreateJob={async (title) => {
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/hr/jobs`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'X-User-Id': activeUserId },
+                  body: JSON.stringify({ role_title: title })
+                });
+                if (res.ok) loadUserData();
+              }}
+              onScreenCandidates={(jobId) => {
+                // Simulate screening
+                setHrData({
+                  ...hrData,
+                  candidates: [
+                    { id: 'c1', name: 'Moussa Diallo', role: 'Fullstack Dev', matchScore: 92, status: 'entretien' },
+                    { id: 'c2', name: 'Sarah Koné', role: 'Fullstack Dev', matchScore: 78, status: 'nouveau' },
+                    { id: 'c3', name: 'Jean-Marc Kouassi', role: 'Fullstack Dev', matchScore: 85, status: 'nouveau' },
+                  ]
+                });
+              }}
+              onGenerateOnboarding={async (name, role) => {
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/hr/onboarding`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'X-User-Id': activeUserId },
+                  body: JSON.stringify({ candidate_name: name, role })
+                });
+                if (res.ok) loadUserData();
+              }}
+            />
           )}
         </main>
       </div>

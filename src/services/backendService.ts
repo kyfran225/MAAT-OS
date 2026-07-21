@@ -41,6 +41,7 @@ export interface UserAllData {
   decision_logs: DecisionLog[];
   simulations: SimulationScenario[];
   crm_contacts?: CRMContact[];
+  finance_stats?: any;
 }
 
 export class BackendService {
@@ -415,6 +416,21 @@ export class BackendService {
   public async getKnowledgeSources(): Promise<any[] | null> {
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/knowledge`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Finance OS Stats
+   */
+  public async getFinanceStats(): Promise<any | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/finance/stats`, {
         headers: this.getHeaders(),
       });
       if (!res.ok) return null;

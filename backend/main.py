@@ -400,6 +400,12 @@ def update_crm_contact_status(
     if not updated:
         raise HTTPException(status_code=404, detail="Contact CRM introuvable")
 
+    # --- Finance OS Revenue Trigger ---
+    if new_status == "client":
+        # On enregistre le revenu dans le Finance OS
+        amount = updated.get("estimatedBudget", 0)
+        user_store.add_finance_event(uid, "CRM_CONVERSION", f"Conversion Client : {updated.get('name')}", float(amount), False)
+
     user_store.update_crm_contacts(uid, contacts)
     return updated
 
@@ -471,6 +477,44 @@ def get_autopilot_activity(x_user_id: Optional[str] = Header(None), user_id: Opt
     uid = get_user_id(x_user_id, user_id)
     data = user_store.get_or_create_user_data(uid)
     return data.get("autopilot_activity", [])
+
+# --- Finance OS Endpoints ---
+
+@app.get("/api/v1/finance/stats")
+def get_finance_stats(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    data = user_store.get_or_create_user_data(uid)
+    return data.get("finance_stats", {"total_cost": 0, "total_revenue": 0, "events": []})
+
+# --- Market Brain Endpoints ---
+
+@app.get("/api/v1/market/competitors/signals")
+def get_competitor_signals(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    return maatfeed_service.get_competitor_signals(uid)
+
+# --- HR Expansion Endpoints ---
+
+@app.post("/api/v1/hr/jobs")
+def create_job_posting(request: dict, x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    role_title = request.get("role_title", "Nouveau Poste")
+    from app.services.hr_service import hr_service
+    return hr_service.generate_job_description(uid, role_title)
+
+@app.get("/api/v1/hr/data")
+def get_hr_data(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    data = user_store.get_or_create_user_data(uid)
+    return data.get("hr_data", {"jobs": [], "candidates": [], "onboarding_plans": []})
+
+@app.post("/api/v1/hr/onboarding")
+def create_onboarding(request: dict, x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    candidate_name = request.get("candidate_name", "Recrue")
+    role = request.get("role", "Collaborateur")
+    from app.services.hr_service import hr_service
+    return hr_service.generate_onboarding_plan(uid, candidate_name, role)
 
 if __name__ == "__main__":
     import uvicorn

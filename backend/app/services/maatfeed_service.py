@@ -73,4 +73,30 @@ class MAATFEEDService:
             }
         }
 
+    def get_competitor_signals(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Génère des signaux basés sur les concurrents configurés dans le Company Brain.
+        """
+        user_data = user_store.get_or_create_user_data(user_id)
+        competitors = user_data["company_brain"].get("competitors", [])
+
+        if not competitors:
+            return []
+
+        signals = []
+        for comp in competitors:
+            # Simulation de détection de mouvement concurrent
+            name = comp.get("name", "Concurrent")
+            signals.append({
+                "id": f"comp-sig-{uuid.uuid4().hex[:6]}",
+                "competitorName": name,
+                "title": f"Mouvement Stratégique : {name}",
+                "content": f"Le concurrent {name} a été détecté en train de lancer une nouvelle offre agressive sur le segment {user_data['company_brain'].get('industry')}.",
+                "timestamp": "Il y a 2h",
+                "impactLevel": "Alerte" if comp.get("threatLevel") == "Élevé" else "Info",
+                "suggestedMission": f"Riposte Stratégique contre {name}"
+            })
+
+        return signals
+
 maatfeed_service = MAATFEEDService()

@@ -82,12 +82,20 @@ class FounderBrainSchema(BaseModel):
     strategicStyle: str
     nonNegotiables: List[str]
 
+class CompetitorSchema(BaseModel):
+    id: str
+    name: str
+    website: str
+    strength: str
+    threatLevel: str
+
 class CompanyBrainSchema(BaseModel):
     companyName: str
     industry: str
     valueProposition: str
     mainProducts: List[str]
     brandVoice: str
+    competitors: Optional[List[CompetitorSchema]] = []
 
 class DecisionLogSchema(BaseModel):
     id: str

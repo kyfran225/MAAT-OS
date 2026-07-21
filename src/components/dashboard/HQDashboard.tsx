@@ -14,6 +14,7 @@ interface HQDashboardProps {
   onOpenCreateMission: () => void;
   setCurrentView: (view: AppView) => void;
   onExecuteRecommendation: (title: string) => void;
+  financeStats?: any;
 }
 
 export const HQDashboard: React.FC<HQDashboardProps> = ({
@@ -23,7 +24,8 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
   agents,
   onOpenCreateMission,
   setCurrentView,
-  onExecuteRecommendation
+  onExecuteRecommendation,
+  financeStats
 }) => {
   const [ingestedAssets, setIngestedAssets] = useState<{ id: string; name: string; type: string }[]>([]);
   const [liveSignals, setLiveSignals] = useState<any[]>([]);
@@ -106,6 +108,21 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Competitor Alert Banner */}
+            <div
+              onClick={() => setCurrentView('market_brain')}
+              className="mt-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between cursor-pointer hover:bg-rose-500/20 transition-all animate-pulse"
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 text-rose-400" />
+                <div>
+                  <div className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Alerte Stratégique Market Brain™</div>
+                  <div className="text-xs text-white font-semibold">Mouvement agressif détecté chez un concurrent direct.</div>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-rose-400" />
+            </div>
           </div>
 
           <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
@@ -130,44 +147,51 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
       {/* Grid Section: System Health Scores & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Health Score Card */}
-        <div className="glass-panel rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-heading font-bold text-sm xl:text-base text-white flex items-center gap-1.5 whitespace-nowrap shrink-0">
-              <TrendingUp className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Score Santé Système</span>
-            </h3>
-            <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap shrink-0">
-              {systemHealth.overallHealth}% Global
-            </span>
+        {/* Finance OS / ROI Summary Card */}
+        <div className="glass-panel rounded-2xl p-6 space-y-4 flex flex-col justify-between border-t-2 border-t-emerald-500">
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h3 className="font-heading font-bold text-sm xl:text-base text-white flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Performance Finance OS</span>
+              </h3>
+              <span className="text-[10px] font-mono-code text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 whitespace-nowrap shrink-0">
+                ROI LIVE
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 py-2">
+              <div className="space-y-1">
+                <div className="text-[10px] text-slate-500 uppercase font-bold">Investissement IA</div>
+                <div className="text-sm font-mono-code font-bold text-purple-400">
+                  {financeStats?.total_cost?.toLocaleString() || '0'} <span className="text-[8px]">XOF</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-[10px] text-slate-500 uppercase font-bold">Revenu Généré</div>
+                <div className="text-sm font-mono-code font-bold text-emerald-400">
+                  {financeStats?.total_revenue?.toLocaleString() || '0'} <span className="text-[8px]">XOF</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+              <div className="text-xs text-slate-300">Index ROI Stratégique</div>
+              <div className="text-lg font-mono-code font-bold text-emerald-400">
+                {financeStats?.total_cost > 0
+                  ? ((financeStats.total_revenue - financeStats.total_cost) / financeStats.total_cost * 100).toFixed(0)
+                  : '0'}%
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-3 pt-2">
-            {[
-              { label: 'Vision Stratégique', score: systemHealth.strategicScore },
-              { label: 'Création de Contenu', score: systemHealth.contentScore },
-              { label: 'SEO & Visibilité', score: systemHealth.seoScore },
-              { label: 'Taux de Conversion', score: systemHealth.conversionScore },
-              { label: 'Automatisation IA', score: systemHealth.automationScore },
-              { label: 'Cohérence de Marque', score: systemHealth.brandConsistency },
-            ].map((item, idx) => {
-              const barColor = item.score >= 80 ? 'bg-emerald-500' : item.score >= 50 ? 'bg-amber-500' : 'bg-rose-500';
-              return (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span className="text-slate-300">{item.label}</span>
-                    <span className="font-mono-code font-bold text-white">{item.score}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-                      style={{ width: `${item.score}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <button
+            onClick={() => setCurrentView('finance_os')}
+            className="w-full mt-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-emerald-500 text-emerald-400 font-bold text-xs transition-colors flex items-center justify-center gap-2"
+          >
+            <span>Voir Détails Financiers</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* C-Suite Board Overview */}

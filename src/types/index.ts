@@ -1,4 +1,4 @@
-export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal' | 'sales_os' | 'actions' | 'audit' | 'export_center' | 'rag_chat' | 'onboarding' | 'graph' | 'settings' | 'autopilot';
+export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal' | 'sales_os' | 'actions' | 'audit' | 'export_center' | 'rag_chat' | 'onboarding' | 'graph' | 'settings' | 'autopilot' | 'finance_os' | 'market_brain' | 'hr_os';
 
 export type MissionCategory = 'marketing' | 'sales' | 'product' | 'finance' | 'hr' | 'strategy';
 export type MissionStatus = 'active' | 'debating' | 'simulating' | 'paused' | 'completed';
@@ -86,12 +86,31 @@ export interface FounderBrainConfig {
   nonNegotiables: string[];
 }
 
+export interface Competitor {
+  id: string;
+  name: string;
+  website: string;
+  strength: string;
+  threatLevel: 'Faible' | 'Modéré' | 'Élevé';
+}
+
 export interface CompanyBrainConfig {
   companyName: string;
   industry: string;
   valueProposition: string;
   mainProducts: string[];
   brandVoice: string;
+  competitors?: Competitor[];
+}
+
+export interface MarketSignal {
+  id: string;
+  competitorName: string;
+  title: string;
+  content: string;
+  timestamp: string;
+  impactLevel: 'Info' | 'Alerte' | 'Critique';
+  suggestedMission?: string;
 }
 
 export interface SystemHealth {
@@ -207,6 +226,43 @@ export interface ConnectorSettings {
   isHubspotConnected: boolean;
   isWhatsappConnected: boolean;
   isSendgridConnected: boolean;
+}
+
+export interface FinanceEvent {
+  id: string;
+  timestamp: string;
+  type: string;
+  title: string;
+  amount: number;
+  is_cost: boolean;
+}
+
+export interface FinanceStats {
+  total_cost: number;
+  total_revenue: number;
+  events: FinanceEvent[];
+}
+
+export interface JobPosting {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface Candidate {
+  id: string;
+  name: string;
+  role: string;
+  matchScore: number;
+  status: 'nouveau' | 'entretien' | 'retenu' | 'rejete';
+}
+
+export interface HRData {
+  jobs: JobPosting[];
+  candidates: Candidate[];
+  onboarding_plans: any[];
 }
 
 

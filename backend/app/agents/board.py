@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import groq
 from app.schemas.models import DebateTurn, DebateResponse
 from app.services.rag_service import rag_service
+from app.db.user_store import user_store
 
 load_dotenv()
 
@@ -126,6 +127,11 @@ Remarque: Reste très concis, percutant et ultra-spécifique au contexte de {com
                 final_decision = data.get("finalDecision", f"Arbitrage rendu pour {topic}.")
                 conf_score = data.get("confidenceScore", 95)
 
+                # Cost tracking (XOF) - Simulation based on tokens or fixed price
+                # Llama 3.3 70B on Groq is roughly $0.59 / 1M tokens.
+                # Let's use a flat rate of ~50 XOF per complex debate for the PME.
+                user_store.add_finance_event(user_id, "AI_DEBATE", f"Débat IA : {topic[:30]}...", 50.0, True)
+
                 if turns:
                     return DebateResponse(
                         topic=topic,
@@ -159,6 +165,9 @@ Remarque: Reste très concis, percutant et ultra-spécifique au contexte de {com
                 confidence=96
             )
         ]
+
+        # Cost tracking even for fallback
+        user_store.add_finance_event(user_id, "AI_DEBATE", f"Débat IA (Offline) : {topic[:30]}...", 15.0, True)
 
         return DebateResponse(
             topic=topic,
