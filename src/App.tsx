@@ -18,6 +18,8 @@ import { ActionGeneratorModule } from './components/actions/ActionGeneratorModul
 import { HealthAuditModule } from './components/audit/HealthAuditModule';
 import { ExportCenter } from './components/export/ExportCenter';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
+import { DeepRAGChat } from './components/brain/DeepRAGChat';
+import { KnowledgeGraphExplorer } from './components/graph/KnowledgeGraphExplorer';
 
 import { BackendService } from './services/backendService';
 import { INITIAL_AGENTS, INITIAL_CRM_CONTACTS, DEMO_DATASET } from './data/mockData';
@@ -454,6 +456,23 @@ export const App: React.FC = () => {
               decisionLogs={decisionLogs}
               agents={agents}
             />
+          )}
+
+          {currentView === 'rag_chat' && (
+            <DeepRAGChat />
+          )}
+
+          {currentView === 'onboarding' && (
+            <OnboardingWizard
+              onComplete={(config) => {
+                handleSaveFounderConfig(config);
+                setCurrentView('dashboard');
+              }}
+            />
+          )}
+
+          {currentView === 'graph' && (
+            <KnowledgeGraphExplorer />
           )}
         </main>
       </div>

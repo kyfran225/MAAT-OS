@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppView } from '../../types';
-import { LayoutDashboard, Target, Users, Brain, Cpu, FileText, Globe, Zap, Activity, FileDown } from 'lucide-react';
+import { LayoutDashboard, Target, Users, Brain, Cpu, FileText, Globe, Zap, Activity, FileDown, MessageSquare, Network, Sparkles } from 'lucide-react';
 
 interface SidebarProps {
   currentView: AppView;
@@ -17,6 +17,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navItems: { id: AppView; label: string; icon: React.FC<{ className?: string }>; badge?: number | string }[] = [
     { id: 'dashboard', label: 'QG Studio', icon: LayoutDashboard },
+    { id: 'rag_chat', label: 'Deep RAG Chat', icon: MessageSquare, badge: 'NEW' },
+    { id: 'graph', label: 'Knowledge Graph', icon: Network },
     { id: 'audit', label: 'Audit Stratégique', icon: Activity, badge: 'IA' },
     { id: 'missions', label: 'Missions™', icon: Target, badge: activeMissionsCount },
     { id: 'actions', label: 'Actions IA', icon: Zap, badge: 'IA' },
@@ -26,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'simulation', label: 'Mode Simulation', icon: Cpu, badge: 'IA' },
     { id: 'journal', label: 'Journal de Bord', icon: FileText, badge: unresolvedDecisionsCount },
     { id: 'export_center', label: 'Export PDF', icon: FileDown },
+    { id: 'onboarding', label: 'Onboarding', icon: Sparkles },
   ];
 
   return (

@@ -8,8 +8,37 @@ import {
   Percent, 
   Bot, 
   Sparkles,
-  Save
+  Save,
+  BarChart3,
+  Calendar,
+  LineChart
 } from 'lucide-react';
+
+// Specialized calculator for SaaS/B2B Metrics
+const calculateAdvancedMetrics = (budget: number, price: number, conv: number, agents: number) => {
+  const leads = Math.round(budget / 45); // Avg cost per lead
+  const customers = Math.round(leads * (conv / 100));
+  const mrr = customers * price;
+  const churnRate = 0.05; // 5% monthly churn
+  const ltv = price / churnRate;
+  const cac = customers > 0 ? Math.round(budget / customers) : budget;
+  const ltvCacRatio = cac > 0 ? (ltv / cac).toFixed(1) : '0';
+
+  // Payback period (months)
+  const payback = price > 0 ? Math.ceil(cac / price) : 0;
+
+  // 12 Month Growth Projection
+  const monthlyData = Array.from({ length: 12 }, (_, i) => {
+    const month = i + 1;
+    // Simple growth model: monthly new customers added to total, with churn applied to cumulative
+    const totalCustomers = Math.round(customers * month * (1 - churnRate * i));
+    const revenue = totalCustomers * price;
+    const costs = budget + (agents * 1200);
+    return { month, revenue, profit: revenue - costs };
+  });
+
+  return { customers, mrr, ltv, cac, ltvCacRatio, payback, monthlyData };
+};
 
 interface SimulationViewProps {
   scenarios: SimulationScenario[];
@@ -32,17 +61,16 @@ export const SimulationView: React.FC<SimulationViewProps> = ({
   const [savedScenarios, setSavedScenarios] = useState<SimulationScenario[]>(scenarios);
   const [selectedScenario, setSelectedScenario] = useState<SimulationScenario | null>(scenarios[0] || null);
 
-  // Dynamic Financial Calculations
-  const estimatedNewCustomers = Math.round((marketingBudget / 150) * (targetConversion / 10));
-  const projectedMonthlyRevenue = estimatedNewCustomers * productPrice;
-  const projected12MonthRevenue = projectedMonthlyRevenue * 12;
+  // Dynamic Financial Calculations using Advanced Engine
+  const metrics = calculateAdvancedMetrics(marketingBudget, productPrice, targetConversion, aiAgentsCount);
+
   const estimatedAnnualCost = (marketingBudget * 12) + (aiAgentsCount * 1200);
+  const projected12MonthRevenue = metrics.monthlyData.reduce((acc, curr) => acc + curr.revenue, 0);
   const projectedNetProfit = projected12MonthRevenue - estimatedAnnualCost;
   const calculatedROI = estimatedAnnualCost > 0 ? (projected12MonthRevenue / estimatedAnnualCost).toFixed(1) : '1.0';
 
-  const estimatedCAC = estimatedNewCustomers > 0 ? Math.round(marketingBudget / estimatedNewCustomers) : 150;
-  const riskLevel = Number(calculatedROI) >= 2.5 ? 'Faible' : Number(calculatedROI) >= 1.5 ? 'Modéré' : 'Élevé';
-  const confidenceScore = Math.min(98, Math.max(75, 80 + Math.round(Number(calculatedROI) * 4)));
+  const riskLevel = Number(calculatedROI) >= 3.0 ? 'Faible' : Number(calculatedROI) >= 1.8 ? 'Modéré' : 'Élevé';
+  const confidenceScore = Math.min(98, Math.max(70, 75 + Math.round(Number(calculatedROI) * 5)));
 
   const handleSaveScenario = (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,36 +273,92 @@ export const SimulationView: React.FC<SimulationViewProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-900 space-y-1">
                 <span className="text-[10px] text-slate-400 font-mono-code">Nouveaux Clients/Mois</span>
-                <div className="text-lg font-bold font-mono-code text-cyan-400">+{estimatedNewCustomers}</div>
+                <div className="text-lg font-bold font-mono-code text-cyan-400">+{metrics.customers}</div>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-900 space-y-1">
                 <span className="text-[10px] text-slate-400 font-mono-code">MRR Projeté</span>
-                <div className="text-lg font-bold font-mono-code text-emerald-400">+${projectedMonthlyRevenue.toLocaleString()}</div>
+                <div className="text-lg font-bold font-mono-code text-emerald-400">+${metrics.mrr.toLocaleString()}</div>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-900 space-y-1">
-                <span className="text-[10px] text-slate-400 font-mono-code">CAC Estimé</span>
-                <div className="text-lg font-bold font-mono-code text-amber-400">${estimatedCAC}</div>
+                <span className="text-[10px] text-slate-400 font-mono-code">LTV/CAC Ratio</span>
+                <div className="text-lg font-bold font-mono-code text-amber-400">{metrics.ltvCacRatio}x</div>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-900 space-y-1">
-                <span className="text-[10px] text-slate-400 font-mono-code">ROI Calculé</span>
+                <span className="text-[10px] text-slate-400 font-mono-code">ROI Global</span>
                 <div className="text-lg font-bold font-mono-code text-purple-400">{calculatedROI}x</div>
               </div>
             </div>
 
-            {/* Profit Net Block */}
-            <div className="p-4 rounded-2xl bg-slate-950 border border-emerald-500/30 space-y-1">
+            {/* Payback & Profit Block */}
+            <div className="p-4 rounded-2xl bg-slate-950 border border-emerald-500/30 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-300 font-bold">Profit Net Estimé sur 1 an :</span>
+                <span className="text-slate-300 font-bold">Profit Net Estimé (1 an) :</span>
                 <span className="text-base font-extrabold font-mono-code text-emerald-400">
                   +${projectedNetProfit.toLocaleString()}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono-code pt-1">
+
+              {/* Payback Period Visual */}
+              <div className="space-y-1.5 pt-1 border-t border-slate-900">
+                <div className="flex justify-between text-[10px] font-mono-code">
+                  <span className="text-slate-500">Période de Rentabilité (Payback)</span>
+                  <span className="text-cyan-400 font-bold">{metrics.payback} mois</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden flex">
+                  <div
+                    className="h-full bg-rose-500/50"
+                    style={{ width: `${(metrics.payback / 12) * 100}%` }}
+                  />
+                  <div
+                    className="h-full bg-emerald-500"
+                    style={{ width: `${(1 - metrics.payback / 12) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono-code">
                 <span>Niveau de Risque : <strong className={riskLevel === 'Faible' ? 'text-emerald-400' : 'text-amber-400'}>{riskLevel}</strong></span>
                 <span>Confiance : <strong>{confidenceScore}%</strong></span>
+              </div>
+            </div>
+
+            {/* Monthly Growth Chart Simulation */}
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-900 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <LineChart className="w-3 h-3 text-cyan-400" />
+                  <span>Courbe de Croissance (12m)</span>
+                </h4>
+                <div className="flex gap-2">
+                   <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div><span className="text-[8px] text-slate-500">Revenus</span></div>
+                   <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div><span className="text-[8px] text-slate-500">Coûts</span></div>
+                </div>
+              </div>
+
+              <div className="h-24 flex items-end justify-between gap-1 px-1">
+                {metrics.monthlyData.map((d, i) => {
+                  const maxRev = Math.max(...metrics.monthlyData.map(m => m.revenue));
+                  const height = maxRev > 0 ? (d.revenue / maxRev) * 100 : 0;
+                  return (
+                    <div key={i} className="flex-1 group relative">
+                      <div
+                        className="w-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-all rounded-t-sm"
+                        style={{ height: `${height}%` }}
+                      />
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-800 text-[8px] text-white px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        ${Math.round(d.revenue/1000)}k
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-between text-[8px] text-slate-600 font-mono-code uppercase px-1">
+                <span>M01</span>
+                <span>M06</span>
+                <span>M12</span>
               </div>
             </div>
 
