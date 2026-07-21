@@ -80,6 +80,7 @@ export const SmartIngestionCenter: React.FC = () => {
   const [connectingType, setConnectingType] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [activeContext, setActiveContext] = useState<IngestedSource['type'] | 'folder' | null>(null);
+  const [oauthError, setOauthError] = useState<string | null>(null);
 
   const handleLoadDemoData = () => {
     // Cumulative: append demo data instead of replacing
@@ -91,10 +92,11 @@ export const SmartIngestionCenter: React.FC = () => {
   // --- Real Google OAuth Integration ---
   const handleGoogleOAuth = (type: 'email' | 'cloud') => {
     const clientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID;
+    setOauthError(null);
 
     if (!clientId || clientId === 'YOUR_GOOGLE_CLIENT_ID') {
-      // Fallback to file selection instead of pure simulation
-      triggerFilePicker(type);
+      setOauthError("Client ID Google non configuré. Passage en mode simulation.");
+      setTimeout(() => triggerFilePicker(type), 1500);
       return;
     }
 
@@ -103,6 +105,10 @@ export const SmartIngestionCenter: React.FC = () => {
     setIsProcessingNew(true);
 
     try {
+      if (!(window as any).google?.accounts?.oauth2) {
+        throw new Error("Bibliothèque Google OAuth non chargée.");
+      }
+
       const client = (window as any).google.accounts.oauth2.initCodeClient({
         client_id: clientId,
         scope: type === 'cloud'
@@ -148,14 +154,32 @@ export const SmartIngestionCenter: React.FC = () => {
         },
         error_callback: (err: any) => {
           console.error('Google Auth Error:', err);
+          const errorMsg = err.type === 'origin_mismatch'
+            ? "Erreur d'origine (origin_mismatch). L'URL http://localhost:3001 doit être autorisée dans la console Google."
+            : `Erreur Google OAuth: ${err.type || 'Inconnue'}`;
+
+          setOauthError(errorMsg);
           setIsProcessingNew(false);
           setConnectingType(null);
+
+          // Auto-fallback after showing error
+          setTimeout(() => {
+            setOauthError(prev => prev ? prev + " Passage en mode simulation..." : null);
+            setTimeout(() => {
+              setOauthError(null);
+              triggerFilePicker(type);
+            }, 2000);
+          }, 3000);
         }
       });
       client.requestCode();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to init Google OAuth:', err);
-      triggerFilePicker(type); // Fallback to file picker
+      setOauthError(`Échec initialisation OAuth: ${err.message || 'Erreur inconnue'}`);
+      setTimeout(() => {
+        setOauthError(null);
+        triggerFilePicker(type);
+      }, 2000);
     }
   };
 
@@ -233,6 +257,10 @@ export const SmartIngestionCenter: React.FC = () => {
     triggerFilePicker(type);
   };
 
+  const handleSimulateDrop = () => {
+    handleConnectorAction('folder');
+  };
+
   return (
     <div className="glass-panel p-6 lg:p-8 rounded-3xl space-y-6">
       {/* Hidden File Input for Multi-Source Ingestion */}
@@ -277,6 +305,22 @@ export const SmartIngestionCenter: React.FC = () => {
           )}
         </button>
       </div>
+
+      {/* OAuth Error Feedback */}
+      {oauthError && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/50 text-red-400 text-xs flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="p-1.5 rounded-lg bg-red-500/20">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          </div>
+          <p className="flex-1 font-medium">{oauthError}</p>
+          <button
+            onClick={() => setOauthError(null)}
+            className="text-red-400/50 hover:text-red-400 transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Connectors Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
