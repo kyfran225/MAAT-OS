@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FounderBrainConfig, CompanyBrainConfig } from '../../types';
-import { Brain, Network, CheckCircle2, Save } from 'lucide-react';
+import { Brain, CheckCircle2, Save, Sparkles } from 'lucide-react';
+import { SmartIngestionCenter } from './SmartIngestionCenter';
+import { KnowledgeGraphExplorer } from '../graph/KnowledgeGraphExplorer';
 
 interface BrainConfiguratorProps {
   founderConfig: FounderBrainConfig;
@@ -15,7 +17,7 @@ export const BrainConfigurator: React.FC<BrainConfiguratorProps> = ({
   onSaveFounderConfig,
   onSaveCompanyConfig
 }) => {
-  const [activeTab, setActiveTab] = useState<'founder' | 'company' | 'graph'>('founder');
+  const [activeTab, setActiveTab] = useState<'ingestion' | 'founder' | 'company' | 'graph'>('ingestion');
 
   const [founderState, setFounderState] = useState<FounderBrainConfig>(founderConfig);
   const [companyState, setCompanyState] = useState<CompanyBrainConfig>(companyConfig);
@@ -62,7 +64,17 @@ export const BrainConfigurator: React.FC<BrainConfiguratorProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 w-fit text-xs font-bold">
+      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 w-fit text-xs font-bold">
+        <button
+          onClick={() => setActiveTab('ingestion')}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+            activeTab === 'ingestion' ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold' : 'text-amber-400 hover:text-white'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Smart Ingestion (Fichiers & Comms)</span>
+        </button>
+
         <button
           onClick={() => setActiveTab('founder')}
           className={`px-4 py-2 rounded-xl transition-all ${
@@ -90,6 +102,9 @@ export const BrainConfigurator: React.FC<BrainConfiguratorProps> = ({
           Enterprise Knowledge Graph™
         </button>
       </div>
+
+      {/* Tab 0: Smart Ingestion Center */}
+      {activeTab === 'ingestion' && <SmartIngestionCenter />}
 
       {/* Tab 1: Founder Brain */}
       {activeTab === 'founder' && (
@@ -248,52 +263,8 @@ export const BrainConfigurator: React.FC<BrainConfiguratorProps> = ({
         </form>
       )}
 
-      {/* Tab 3: Knowledge Graph Visualizer */}
-      {activeTab === 'graph' && (
-        <div className="glass-panel p-6 lg:p-8 rounded-3xl space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <div>
-              <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-                <Network className="w-5 h-5 text-amber-400" />
-                <span>Enterprise Knowledge Graph™ (Visualiseur de Nœuds)</span>
-              </h2>
-              <p className="text-xs text-slate-400">Cartographie vivante des relations entre produits, campagnes, clients et décisions.</p>
-            </div>
-
-            <span className="text-xs font-mono-code font-bold text-emerald-400 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              1,420 Nœuds Connectés
-            </span>
-          </div>
-
-          {/* Interactive Visual Representation of Graph Nodes */}
-          <div className="p-8 rounded-2xl bg-slate-950 border border-slate-800 space-y-6 relative overflow-hidden min-h-[350px] flex flex-col justify-center items-center text-center">
-            <div className="absolute inset-0 bg-radial-gradient from-amber-500/5 via-transparent to-transparent pointer-events-none" />
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl relative z-10">
-              <div className="p-4 rounded-xl bg-slate-900 border border-amber-500/30 text-amber-400 text-xs font-mono-code font-bold shadow-lg">
-                Founder Brain™
-                <div className="text-[10px] text-slate-400 font-normal mt-1">Nœud Racine • Vision</div>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-900 border border-cyan-500/30 text-cyan-400 text-xs font-mono-code font-bold shadow-lg">
-                Mission 01 (Afrique)
-                <div className="text-[10px] text-slate-400 font-normal mt-1">Nœud Action • Stratégie</div>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-900 border border-emerald-500/30 text-emerald-400 text-xs font-mono-code font-bold shadow-lg">
-                Segment PME Abidjan
-                <div className="text-[10px] text-slate-400 font-normal mt-1">Customer Brain • Persona</div>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-900 border border-indigo-500/30 text-indigo-400 text-xs font-mono-code font-bold shadow-lg">
-                Signal MAATFEED #384
-                <div className="text-[10px] text-slate-400 font-normal mt-1">Cultural Brain • Tendance</div>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-400 max-w-lg relative z-10 mt-4 leading-relaxed">
-              Le Knowledge Graph garantit qu'aucune décision ne reste isolée. Une modification dans l'ADN du Founder Brain met à jour la logique de toutes les Missions en cours.
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Tab 3: Knowledge Graph Visualizer & GraphRAG Explorer */}
+      {activeTab === 'graph' && <KnowledgeGraphExplorer />}
     </div>
   );
 };

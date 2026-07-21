@@ -32,29 +32,29 @@ export class MAATFEEDIntelligenceService {
         sentiment: 'Fortement Enjoué',
         relevanceScore: 96,
         samplePostSnippet: '"Marre des logiciels qui demandent 3 jours d\'apprentissage. On veut un outil qui comprend direct nos objectifs !"',
-        recommendedMissionAction: 'Créer la Mission 02 d\'Optimisation d\'Onboarding en < 3 minutes.',
+        recommendedMissionAction: 'Lancer une mission d\'optimisation de l\'expérience et du parcours utilisateur.',
         timestamp: 'Il y a 12 min'
       },
       {
         id: 'sig-385',
-        topic: 'Integration Mobile Money (Wave, Orange Money) Afrique',
+        topic: 'Intégration des Paiements Locaux & Mobile Money',
         category: 'Finance & Commerce',
         volumeGrowth: '+88%',
         sentiment: 'Incontournable',
         relevanceScore: 93,
         samplePostSnippet: '"Si une app pro ne prend pas Wave ou Mobile Money à Abidjan ou Dakar, les PME abandonnent à la caisse."',
-        recommendedMissionAction: 'Mission 01 Afrique de l\'Ouest : Intégrer les passerelles Mobile Money.',
+        recommendedMissionAction: 'Intégrer les passerelles de paiement locales (Wave, Mobile Money) pour maximiser les conversions.',
         timestamp: 'Il y a 35 min'
       },
       {
         id: 'sig-386',
-        topic: 'Démonstrations Produit "Sans Filtre" vs Spots Pubs',
+        topic: 'Démonstrations Produit en Direct vs Spots Pubs',
         category: 'Marketing & Transparence',
         volumeGrowth: '+115%',
         sentiment: 'Préféré par 82%',
         relevanceScore: 90,
         samplePostSnippet: '"Montrez-nous le vrai fonctionnement en direct, pas des vidéos parfaites faites en studio."',
-        recommendedMissionAction: 'Creative Director Agent : Lancer le format vidéo Démonstration Réelle.',
+        recommendedMissionAction: 'Concevoir une campagne marketing basée sur la démonstration vidéo réelle et sans filtre.',
         timestamp: 'Il y a 1h'
       }
     ];

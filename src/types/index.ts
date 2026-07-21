@@ -1,4 +1,4 @@
-export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal';
+export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal' | 'sales_os' | 'actions' | 'audit' | 'export_center';
 
 export type MissionCategory = 'marketing' | 'sales' | 'product' | 'finance' | 'hr' | 'strategy';
 export type MissionStatus = 'active' | 'debating' | 'simulating' | 'paused' | 'completed';
@@ -103,3 +103,89 @@ export interface SystemHealth {
   automationScore: number;
   brandConsistency: number;
 }
+
+export type CRMContactStatus = 'nouveau' | 'qualifie' | 'proposition' | 'client' | 'inactif';
+
+export interface CRMContactAIAnalysis {
+  qualificationScore: number;
+  buyerIntentScore: number;
+  recommendedAgent: string;
+  nextAction: string;
+  keyInsights: string[];
+}
+
+export interface CRMContact {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  industry: string;
+  status: CRMContactStatus;
+  estimatedBudget: number;
+  tags: string[];
+  createdAt: string;
+  lastContactDate: string;
+  notes: string;
+  aiAnalysis: CRMContactAIAnalysis;
+}
+
+export interface CRMPipelineStage {
+  id: CRMContactStatus;
+  label: string;
+  count: number;
+  totalValue: number;
+  color: string;
+}
+
+export type GeneratedActionType = 'devis_proposition' | 'relance_whatsapp' | 'email_prospection' | 'synthese_mission';
+
+export interface GeneratedAction {
+  id: string;
+  type: GeneratedActionType;
+  title: string;
+  targetContactName?: string;
+  targetCompany?: string;
+  assignedAgent: string;
+  content: string;
+  metadata: {
+    estimatedAmount?: number;
+    recommendedChannel?: string;
+    confidenceScore: number;
+    sourceDocument?: string;
+  };
+  createdAt: string;
+  status: 'draft' | 'approved' | 'sent';
+}
+
+export interface ExecutiveAuditReport {
+  id: string;
+  generatedAt: string;
+  overallScore: number;
+  scores: {
+    strategicAlignment: number;
+    commercialConversion: number;
+    financialEfficiency: number;
+    governanceRisk: number;
+  };
+  agentDiagnostics: {
+    agentName: string;
+    role: string;
+    quote: string;
+    status: 'optimal' | 'warning' | 'critical';
+  }[];
+  bottlenecks: {
+    issue: string;
+    severity: 'Faible' | 'Modéré' | 'Élevé';
+    impact: string;
+  }[];
+  actionPlan: {
+    title: string;
+    targetDepartment: string;
+    estimatedROI: string;
+    priority: 'Haute' | 'Moyenne' | 'Urgent';
+  }[];
+}
+
+
+

@@ -1,4 +1,5 @@
-import { Mission, SimulationScenario, SystemHealth } from '../types';
+import { Mission, SimulationScenario, SystemHealth, DecisionLog, FounderBrainConfig, CompanyBrainConfig, Agent, CRMContact } from '../types';
+import { MAATAuthService } from './maatAuthService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -30,6 +31,18 @@ export interface KnowledgeGraphNode {
   department: string;
 }
 
+export interface UserAllData {
+  user_id: string;
+  founder_brain: FounderBrainConfig;
+  company_brain: CompanyBrainConfig;
+  system_health: SystemHealth;
+  agents: Agent[];
+  missions: Mission[];
+  decision_logs: DecisionLog[];
+  simulations: SimulationScenario[];
+  crm_contacts?: CRMContact[];
+}
+
 export class BackendService {
   private static instance: BackendService;
 
@@ -42,12 +55,53 @@ export class BackendService {
     return BackendService.instance;
   }
 
+  private getHeaders(): Record<string, string> {
+    const user = MAATAuthService.getInstance().getCurrentUser();
+    const userId = user ? user.userId : 'user-maat-001';
+    return {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId,
+    };
+  }
+
+  /**
+   * Récupère l'intégralité des données persistées pour l'utilisateur actuellement connecté
+   */
+  public async getUserData(): Promise<UserAllData | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/user-data`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Health Check & Metrics
    */
   public async getHealth(): Promise<SystemHealth | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/health`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/health`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Missions
+   */
+  public async getMissions(): Promise<Mission[] | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/missions`, {
+        headers: this.getHeaders(),
+      });
       if (!res.ok) return null;
       return await res.json();
     } catch {
@@ -70,7 +124,7 @@ export class BackendService {
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/missions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.getHeaders(),
         body: JSON.stringify(reqData),
       });
       if (!res.ok) return null;
@@ -82,14 +136,44 @@ export class BackendService {
   }
 
   /**
-   * Session de Débat Inter-Agents du Conseil d'Administration IA
+   * Validation d'une étape de plan de mission
    */
-  public async runBoardDebate(topic: string): Promise<BackendDebateResponse | null> {
+  public async toggleMissionStep(missionId: string, stepId: string): Promise<Mission | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/debate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic }),
+      const res = await fetch(`${API_BASE_URL}/api/v1/missions/${missionId}/step`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify({ missionId, stepId }),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Journal de bord / Decision Logs
+   */
+  public async getLogs(): Promise<DecisionLog[] | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/logs`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Simulations
+   */
+  public async getSimulations(): Promise<SimulationScenario[] | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/simulations`, {
+        headers: this.getHeaders(),
       });
       if (!res.ok) return null;
       return await res.json();
@@ -109,7 +193,7 @@ export class BackendService {
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/simulation`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.getHeaders(),
         body: JSON.stringify(reqData),
       });
       if (!res.ok) return null;
@@ -125,11 +209,101 @@ export class BackendService {
         confidenceScore: data.confidenceScore,
         recommendation: data.recommendation,
         projections: {
-          revenueIncrease: data.revenueIncrease,
-          customerAcquisition: data.customerAcquisition,
-          timeline: data.timeline,
+          revenueIncrease: data.projections?.revenueIncrease || '+$24,000 / trimestre',
+          customerAcquisition: data.projections?.customerAcquisition || '+85 Clients',
+          timeline: data.projections?.timeline || '2 Mois',
         },
       };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Founder Brain Configuration
+   */
+  public async getFounderBrain(): Promise<FounderBrainConfig | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/brain/founder`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  public async saveFounderBrain(config: FounderBrainConfig): Promise<FounderBrainConfig | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/brain/founder`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(config),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Company Brain Configuration
+   */
+  public async getCompanyBrain(): Promise<CompanyBrainConfig | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/brain/company`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  public async saveCompanyBrain(config: CompanyBrainConfig): Promise<CompanyBrainConfig | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/brain/company`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(config),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Agents
+   */
+  public async getAgents(): Promise<Agent[] | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/agents`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Session de Débat Inter-Agents du Conseil d'Administration IA
+   */
+  public async runBoardDebate(topic: string): Promise<BackendDebateResponse | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/debate`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({ topic }),
+      });
+      if (!res.ok) return null;
+      return await res.json();
     } catch {
       return null;
     }
@@ -140,7 +314,9 @@ export class BackendService {
    */
   public async getCulturalSignals(): Promise<BackendCulturalSignal[] | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/maatfeed/signals`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/maatfeed/signals`, {
+        headers: this.getHeaders(),
+      });
       if (!res.ok) return null;
       const data = await res.json();
       return data.signals;
@@ -154,10 +330,54 @@ export class BackendService {
    */
   public async getKnowledgeGraphNodes(): Promise<KnowledgeGraphNode[] | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/graph/nodes`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/graph/nodes`, {
+        headers: this.getHeaders(),
+      });
       if (!res.ok) return null;
       const data = await res.json();
       return data.nodes;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Sales OS & CRM Contacts PME
+   */
+  public async getCRMContacts(): Promise<CRMContact[] | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/crm/contacts`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  public async createCRMContact(contact: CRMContact): Promise<CRMContact | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/crm/contacts`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(contact),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  public async updateCRMContactStatus(contactId: string, newStatus: string): Promise<CRMContact | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/crm/contacts/${contactId}/status?new_status=${newStatus}`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
     } catch {
       return null;
     }

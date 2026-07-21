@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppView } from '../../types';
-import { LayoutDashboard, Target, Users, Brain, Cpu, FileText } from 'lucide-react';
+import { LayoutDashboard, Target, Users, Brain, Cpu, FileText, Zap, Activity, FileDown } from 'lucide-react';
 
 interface MobileNavProps {
   currentView: AppView;
@@ -15,16 +15,20 @@ export const MobileNav: React.FC<MobileNavProps> = ({
 }) => {
   const items: { id: AppView; label: string; icon: React.FC<{ className?: string }>; badge?: number }[] = [
     { id: 'dashboard', label: 'QG', icon: LayoutDashboard },
+    { id: 'audit', label: 'Audit', icon: Activity },
     { id: 'missions', label: 'Missions', icon: Target, badge: activeMissionsCount },
+    { id: 'actions', label: 'Actions', icon: Zap },
     { id: 'agents', label: 'Conseil', icon: Users },
+    { id: 'sales_os', label: 'Sales CRM', icon: Users },
     { id: 'brains', label: 'Brains', icon: Brain },
     { id: 'simulation', label: 'Simu', icon: Cpu },
-    { id: 'journal', label: 'Journal', icon: FileText }
+    { id: 'journal', label: 'Journal', icon: FileText },
+    { id: 'export_center', label: 'Export', icon: FileDown }
   ];
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass-panel border-t border-slate-800 bg-slate-950/95 px-2 py-2">
-      <div className="grid grid-cols-6 gap-1">
+      <div className="grid grid-cols-10 gap-1">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;

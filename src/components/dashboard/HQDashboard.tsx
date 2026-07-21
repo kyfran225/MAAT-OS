@@ -2,6 +2,7 @@ import React from 'react';
 import { SystemHealth, Mission, DecisionLog, Agent, AppView } from '../../types';
 import { Target, Users, Cpu, FileText, CheckCircle2, AlertTriangle, ArrowRight, ShieldCheck, Flame, PlusCircle, TrendingUp, Globe, Sparkles } from 'lucide-react';
 import { MAATFEEDIntelligenceService } from '../../services/maatfeedIntelligenceService';
+import { MAATAuthService } from '../../services/maatAuthService';
 
 interface HQDashboardProps {
   systemHealth: SystemHealth;
@@ -22,8 +23,18 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
   setCurrentView,
   onExecuteRecommendation
 }) => {
+  const authService = MAATAuthService.getInstance();
+  const isAuthenticated = authService.isAuthenticated();
+  const currentUser = authService.getCurrentUser();
+
   const activeMissions = missions ? missions.filter(m => m.status === 'active') : [];
   const ceoAgent = (agents && agents.find(a => a.id === 'ceo-agent')) || (agents && agents[0]) || { lastQuote: 'Système d\'exploitation d\'entreprise opérationnel.', name: 'CEO Agent' };
+
+  const userNameDisplay = currentUser
+    ? currentUser.displayName
+    : 'Dirigeant';
+
+  const liveSignalsCount = MAATFEEDIntelligenceService.getInstance().getLiveCulturalSignals().length;
 
   return (
     <div className="space-y-6 pb-12">
@@ -35,11 +46,13 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-mono-code font-bold">
               <Flame className="w-3.5 h-3.5 text-amber-400" />
-              <span>CEO MORNING BRIEF™ • 08:30 UTC</span>
+              <span>CEO MORNING BRIEF • 08:30 UTC</span>
             </div>
             
             <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
-              Bonjour Franck. Voici le statut de votre organisation aujourd'hui.
+              {isAuthenticated
+                ? `Bonjour ${userNameDisplay}. Voici le statut de votre organisation aujourd'hui.`
+                : `Bienvenue sur MAAT Studio AI. Votre système d'exploitation d'entreprise.`}
             </h1>
 
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-slate-300 text-sm leading-relaxed space-y-2">
@@ -49,15 +62,15 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-2">
                 <div className="flex items-center gap-2 text-emerald-400">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Acquisition : <strong>+18%</strong> ce mois</span>
+                  <span>Missions Actives : <strong>{activeMissions.length}</strong></span>
                 </div>
                 <div className="flex items-center gap-2 text-amber-400">
                   <AlertTriangle className="w-4 h-4" />
-                  <span>Conversion PME : <strong>-7% (Action Requis)</strong></span>
+                  <span>Conseil IA : <strong>{agents.length} Directeurs</strong></span>
                 </div>
                 <div className="flex items-center gap-2 text-cyan-400">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Signaux MAATFEED : <strong>2 Nouveaux</strong></span>
+                  <span>Signaux MAATFEED : <strong>{liveSignalsCount} Nouveaux</strong></span>
                 </div>
               </div>
             </div>
@@ -65,7 +78,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
           <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => onExecuteRecommendation('Optimisation Tunnel PME')}
+              onClick={() => onExecuteRecommendation('Optimisation Stratégique PME')}
               className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-sm hover:brightness-110 shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
             >
               <span>Lancer Recommandation CEO</span>
@@ -77,7 +90,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
               className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500/40 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
             >
               <PlusCircle className="w-4 h-4 text-amber-400" />
-              <span>Créer une Mission™</span>
+              <span>Créer une Mission</span>
             </button>
           </div>
         </div>
@@ -99,26 +112,29 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
 
           <div className="space-y-3 pt-2">
             {[
-              { label: 'Vision Stratégique', score: systemHealth.strategicScore, color: 'bg-emerald-500' },
-              { label: 'Création de Contenu', score: systemHealth.contentScore, color: 'bg-emerald-500' },
-              { label: 'SEO & Visibilité', score: systemHealth.seoScore, color: 'bg-amber-500' },
-              { label: 'Taux de Conversion', score: systemHealth.conversionScore, color: 'bg-rose-500' },
-              { label: 'Automatisation IA', score: systemHealth.automationScore, color: 'bg-emerald-500' },
-              { label: 'Cohérence de Marque', score: systemHealth.brandConsistency, color: 'bg-amber-500' },
-            ].map((item, idx) => (
-              <div key={idx} className="space-y-1">
-                <div className="flex justify-between text-xs font-medium">
-                  <span className="text-slate-300">{item.label}</span>
-                  <span className="font-mono-code font-bold text-white">{item.score}%</span>
+              { label: 'Vision Stratégique', score: systemHealth.strategicScore },
+              { label: 'Création de Contenu', score: systemHealth.contentScore },
+              { label: 'SEO & Visibilité', score: systemHealth.seoScore },
+              { label: 'Taux de Conversion', score: systemHealth.conversionScore },
+              { label: 'Automatisation IA', score: systemHealth.automationScore },
+              { label: 'Cohérence de Marque', score: systemHealth.brandConsistency },
+            ].map((item, idx) => {
+              const barColor = item.score >= 80 ? 'bg-emerald-500' : item.score >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+              return (
+                <div key={idx} className="space-y-1">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="text-slate-300">{item.label}</span>
+                    <span className="font-mono-code font-bold text-white">{item.score}%</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                      style={{ width: `${item.score}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${item.color}`}
-                    style={{ width: `${item.score}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -170,21 +186,20 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
             <div className="flex items-center justify-between gap-2 mb-3">
               <h3 className="font-heading font-bold text-sm xl:text-base text-white flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <Cpu className="w-4 h-4 text-cyan-400 shrink-0" />
-                <span>Mode Simulation™</span>
+                <span>Mode Simulation</span>
               </h3>
               <span className="text-xs font-mono-code text-cyan-400 font-bold px-2 py-0.5 rounded bg-cyan-500/10 whitespace-nowrap shrink-0">
-                What-If Engine
+                What-If Engine™
               </span>
             </div>
             
             <p className="text-xs text-slate-300 leading-relaxed">
-              Testez des scénarios financiers et stratégiques avant d'engager du budget. Calculez les ROI prévisionnels avec le Moteur de Simulation.
+              Testez des scénarios financiers et stratégiques avant d'engager du budget avec le Moteur de Simulation.
             </p>
 
             <div className="mt-4 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs space-y-1.5">
-              <div className="font-bold text-white">Scénario en cours :</div>
-              <div className="text-slate-400">"Augmenter le budget Meta de 50% sur l'Afrique de l'Ouest"</div>
-              <div className="text-emerald-400 font-mono-code font-bold pt-1">ROI estimé : 3.4x (Confiance 89%)</div>
+              <div className="font-bold text-white">Simulations actives :</div>
+              <div className="text-slate-400">Lancez vos propres tests de scénarios ROI stratégiques.</div>
             </div>
           </div>
 
@@ -255,7 +270,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
           <div className="space-y-1">
             <h2 className="text-lg sm:text-xl font-bold font-heading text-white flex items-center gap-2 leading-snug">
               <Target className="w-5 h-5 text-amber-400 shrink-0" />
-              <span>Missions™ Métiers Actives ({activeMissions.length})</span>
+              <span>Missions Métiers Actives ({activeMissions.length})</span>
             </h2>
             <p className="text-xs text-slate-400 leading-normal">
               Chaque Mission est guidée par le Moteur Cognitif et ses 6 couches fonctionnelles.
@@ -271,54 +286,73 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          {activeMissions.map((mission) => (
-            <div 
-              key={mission.id}
-              onClick={() => setCurrentView('missions')}
-              className="glass-card-interactive p-5 rounded-2xl bg-slate-900/90 border border-slate-800 cursor-pointer space-y-4"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono-code font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    {mission.category}
-                  </span>
-                  <h3 className="text-base font-bold text-white mt-1.5">{mission.title}</h3>
-                </div>
-                
-                <div className="text-right">
-                  <span className="text-xs font-mono-code font-bold text-emerald-400">
-                    Score {mission.healthScore}%
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
-                {mission.target}
-              </p>
-
-              {/* Progress Bar */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between text-[11px] font-mono-code">
-                  <span className="text-slate-400">Progression</span>
-                  <span className="text-amber-400 font-bold">{mission.progress}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div 
-                    className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-300"
-                    style={{ width: `${mission.progress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Footer info */}
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
-                <span>Budget : <strong>${mission.spentBudget}</strong> / ${mission.budget}</span>
-                <span>Délai : <strong>{mission.timeline}</strong></span>
-              </div>
+        {activeMissions.length === 0 ? (
+          <div className="p-8 rounded-2xl bg-slate-950/80 border border-dashed border-slate-800 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto">
+              <Target className="w-6 h-6" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-base font-bold text-white">Aucune Mission Métier Active</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              Votre espace de travail est prêt pour votre PME. Créez votre première Mission Métier pour activer l'analyse et l'exécution de votre Conseil d'Administration IA.
+            </p>
+            <button
+              onClick={onOpenCreateMission}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs hover:brightness-110 shadow-lg shadow-amber-500/20 inline-flex items-center gap-2"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Créer ma première Mission</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {activeMissions.map((mission) => (
+              <div 
+                key={mission.id}
+                onClick={() => setCurrentView('missions')}
+                className="glass-card-interactive p-5 rounded-2xl bg-slate-900/90 border border-slate-800 cursor-pointer space-y-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono-code font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      {mission.category}
+                    </span>
+                    <h3 className="text-base font-bold text-white mt-1.5">{mission.title}</h3>
+                  </div>
+                  
+                  <div className="text-right">
+                    <span className="text-xs font-mono-code font-bold text-emerald-400">
+                      Score {mission.healthScore}%
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                  {mission.target}
+                </p>
+
+                {/* Progress Bar */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex justify-between text-[11px] font-mono-code">
+                    <span className="text-slate-400">Progression</span>
+                    <span className="text-amber-400 font-bold">{mission.progress}%</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div 
+                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-300"
+                      style={{ width: `${mission.progress}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Footer info */}
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
+                  <span>Budget : <strong>${mission.spentBudget}</strong> / ${mission.budget}</span>
+                  <span>Délai : <strong>{mission.timeline}</strong></span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Decision Logs Stream */}
@@ -338,32 +372,38 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
           </button>
         </div>
 
-        <div className="space-y-3">
-          {decisionLogs.map((log) => (
-            <div 
-              key={log.id}
-              className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-            >
-              <div className="space-y-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-mono-code text-slate-500 whitespace-nowrap">{log.timestamp}</span>
-                  <span className="text-xs font-bold text-amber-400 whitespace-nowrap">{log.agentName}</span>
-                  <span className="text-[10px] font-mono-code px-2 py-0.5 rounded bg-slate-800 text-slate-400 whitespace-nowrap shrink-0">
-                    {log.category}
+        {decisionLogs.length === 0 ? (
+          <div className="p-6 rounded-2xl bg-slate-950/60 border border-slate-800 text-center text-xs text-slate-400">
+            Aucune décision encore enregistrée. Lancez un Débat du Conseil IA ou créez une Mission pour alimenter la traçabilité.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {decisionLogs.map((log) => (
+              <div 
+                key={log.id}
+                className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+              >
+                <div className="space-y-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-mono-code text-slate-500 whitespace-nowrap">{log.timestamp}</span>
+                    <span className="text-xs font-bold text-amber-400 whitespace-nowrap">{log.agentName}</span>
+                    <span className="text-[10px] font-mono-code px-2 py-0.5 rounded bg-slate-800 text-slate-400 whitespace-nowrap shrink-0">
+                      {log.category}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white">{log.title}</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">{log.reasoning}</p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap shrink-0">
+                    {log.confidenceScore}% Confiance
                   </span>
                 </div>
-                <h4 className="text-sm font-bold text-white">{log.title}</h4>
-                <p className="text-xs text-slate-300 leading-relaxed">{log.reasoning}</p>
               </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap shrink-0">
-                  {log.confidenceScore}% Confiance
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

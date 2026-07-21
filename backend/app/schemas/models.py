@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class PlanStepSchema(BaseModel):
     id: str
@@ -38,6 +38,10 @@ class MissionResponse(BaseModel):
     planSteps: List[PlanStepSchema]
     learnings: List[str]
 
+class ToggleStepRequest(BaseModel):
+    missionId: str
+    stepId: str
+
 class DebateRequest(BaseModel):
     topic: str
     involvedAgents: Optional[List[str]] = None
@@ -68,6 +72,54 @@ class SimulationResponse(BaseModel):
     riskLevel: str
     confidenceScore: int
     recommendation: str
-    revenueIncrease: str
-    customerAcquisition: str
-    timeline: str
+    projections: Dict[str, str]
+
+class FounderBrainSchema(BaseModel):
+    founderName: str
+    visionStatement: str
+    riskTolerance: str
+    coreValues: List[str]
+    strategicStyle: str
+    nonNegotiables: List[str]
+
+class CompanyBrainSchema(BaseModel):
+    companyName: str
+    industry: str
+    valueProposition: str
+    mainProducts: List[str]
+    brandVoice: str
+
+class DecisionLogSchema(BaseModel):
+    id: str
+    timestamp: str
+    title: str
+    agentId: str
+    agentName: str
+    category: str
+    confidenceScore: int
+    reasoning: str
+    status: str
+    impacts: List[str]
+
+class CRMContactAIAnalysisSchema(BaseModel):
+    qualificationScore: int
+    buyerIntentScore: int
+    recommendedAgent: str
+    nextAction: str
+    keyInsights: List[str]
+
+class CRMContactSchema(BaseModel):
+    id: str
+    name: str
+    email: str
+    phone: str
+    company: str
+    industry: str
+    status: str
+    estimatedBudget: float
+    tags: List[str]
+    createdAt: str
+    lastContactDate: str
+    notes: str
+    aiAnalysis: CRMContactAIAnalysisSchema
+

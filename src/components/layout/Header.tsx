@@ -23,11 +23,13 @@ export const Header: React.FC<HeaderProps> = ({
   const handleLogout = () => {
     authService.logout();
     setIsAuthenticated(false);
+    window.location.reload();
   };
 
   const handleDemoLogin = () => {
     authService.loginAsDemoFounder();
     setIsAuthenticated(true);
+    window.location.reload();
   };
 
   return (
@@ -63,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-400 font-medium hidden sm:block">
-              AI Company Operating System™
+              AI Company Operating System
             </p>
           </div>
         </div>
@@ -94,20 +96,25 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Controls & Health Metrics */}
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-        {/* System Health Metric Badge (hidden on mobile, visible on sm+) */}
-        <div 
-          onClick={() => setCurrentView('dashboard')}
-          className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/30 cursor-pointer transition-colors shrink-0"
-          title="Score de Santé Système Globale"
-        >
-          <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-          <div className="text-left">
-            <div className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Santé QG</div>
-            <div className="text-xs font-bold font-mono-code text-emerald-400">
-              {systemHealth.overallHealth}%
+        {/* System Health Metric Badge */}
+        {(() => {
+          const healthColor = systemHealth.overallHealth >= 80 ? 'text-emerald-400' : systemHealth.overallHealth >= 50 ? 'text-amber-400' : 'text-rose-400';
+          return (
+            <div 
+              onClick={() => setCurrentView('dashboard')}
+              className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/30 cursor-pointer transition-colors shrink-0"
+              title="Score de Santé Système Globale"
+            >
+              <Activity className={`w-4 h-4 ${healthColor} animate-pulse`} />
+              <div className="text-left">
+                <div className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Santé QG</div>
+                <div className={`text-xs font-bold font-mono-code ${healthColor}`}>
+                  {systemHealth.overallHealth}%
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Notifications & System Status */}
         <button 
@@ -127,15 +134,33 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setCurrentView('brains')}
               className="flex items-center gap-3 pl-2 pr-3 py-1 rounded-xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all shrink-0"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500/20 to-cyan-500/20 border border-amber-500/30 flex items-center justify-center text-sm font-bold text-amber-400 font-heading">
-                {currentUser.displayName.charAt(0).toUpperCase()}
+              {/* Google profile photo or initials fallback */}
+              <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/30 shrink-0">
+                {currentUser.avatarUrl ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={currentUser.displayName}
+                    className="w-full h-full object-cover"
+                    onError={e => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  className="w-full h-full bg-gradient-to-tr from-amber-500/20 to-cyan-500/20 items-center justify-center text-sm font-bold text-amber-400 font-heading"
+                  style={{ display: currentUser.avatarUrl ? 'none' : 'flex' }}
+                >
+                  {currentUser.displayName.charAt(0).toUpperCase()}
+                </div>
               </div>
               <div className="hidden lg:block text-left">
                 <div className="text-xs font-bold text-white leading-tight">
                   {currentUser.displayName}
                 </div>
                 <div className="text-[10px] text-amber-400/90 font-mono-code">
-                  {currentUser.role === 'founder' ? 'Founder Brain™' : 'Membre MAAT'}
+                  {currentUser.role === 'founder' ? 'Founder Brain' : 'Membre MAAT'}
                 </div>
               </div>
             </div>

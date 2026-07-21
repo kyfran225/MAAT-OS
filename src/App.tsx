@@ -1,14 +1,6 @@
-import React, { useState } from 'react';
-import { AppView, Mission, DecisionLog, SimulationScenario, FounderBrainConfig, CompanyBrainConfig, SystemHealth } from './types';
-import { 
-  INITIAL_SYSTEM_HEALTH, 
-  INITIAL_AGENTS, 
-  INITIAL_MISSIONS, 
-  INITIAL_DECISION_LOGS, 
-  INITIAL_SIMULATIONS, 
-  INITIAL_FOUNDER_BRAIN, 
-  INITIAL_COMPANY_BRAIN 
-} from './data/mockData';
+import React, { useState, useEffect, useCallback } from 'react';
+import { AppView, Mission, DecisionLog, SimulationScenario, FounderBrainConfig, CompanyBrainConfig, SystemHealth, Agent, CRMContact, CRMContactStatus } from './types';
+import { MAATAuthService, isRealName } from './services/maatAuthService';
 
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
@@ -21,23 +13,147 @@ import { BoardView } from './components/agents/BoardView';
 import { BrainConfigurator } from './components/brain/BrainConfigurator';
 import { SimulationView } from './components/simulation/SimulationView';
 import { JournalBoard } from './components/logs/JournalBoard';
+import { SalesOSModule } from './components/crm/SalesOSModule';
+import { ActionGeneratorModule } from './components/actions/ActionGeneratorModule';
+import { HealthAuditModule } from './components/audit/HealthAuditModule';
+import { ExportCenter } from './components/export/ExportCenter';
+import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 
 import { BackendService } from './services/backendService';
+import { INITIAL_AGENTS, INITIAL_CRM_CONTACTS, DEMO_DATASET } from './data/mockData';
+
+const DEFAULT_GUEST_HEALTH: SystemHealth = {
+  overallHealth: 100,
+  strategicScore: 100,
+  contentScore: 100,
+  seoScore: 100,
+  conversionScore: 100,
+  automationScore: 100,
+  brandConsistency: 100,
+};
+
+// Build a founder default seeded with Google identity only when a real name is available
+function buildDefaultFounder(): FounderBrainConfig {
+  const googleUser = MAATAuthService.getInstance().getCurrentUser();
+  const name = googleUser?.displayName || '';
+  return {
+    founderName:     isRealName(name) ? name : '',
+    visionStatement: '',
+    riskTolerance:   'Equilibre' as any,
+    coreValues:      [],
+    strategicStyle:  '',
+    nonNegotiables:  [],
+  };
+}
+
+const DEFAULT_GUEST_COMPANY: CompanyBrainConfig = {
+  companyName: '',
+  industry: '',
+  valueProposition: '',
+  mainProducts: [],
+  brandVoice: '',
+};
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('dashboard');
 
+  const [activeUserId, setActiveUserId] = useState<string>(
+    MAATAuthService.getInstance().getCurrentUser()?.userId || 'user-guest'
+  );
+
   // Application States
-  const [systemHealth] = useState<SystemHealth>(INITIAL_SYSTEM_HEALTH);
-  const [agents] = useState(INITIAL_AGENTS);
-  const [missions, setMissions] = useState<Mission[]>(INITIAL_MISSIONS);
-  const [decisionLogs, setDecisionLogs] = useState<DecisionLog[]>(INITIAL_DECISION_LOGS);
-  const [simulations, setSimulations] = useState<SimulationScenario[]>(INITIAL_SIMULATIONS);
-  const [founderConfig, setFounderConfig] = useState<FounderBrainConfig>(INITIAL_FOUNDER_BRAIN);
-  const [companyConfig, setCompanyConfig] = useState<CompanyBrainConfig>(INITIAL_COMPANY_BRAIN);
+  const [systemHealth, setSystemHealth] = useState<SystemHealth>(DEFAULT_GUEST_HEALTH);
+  const [agents, setAgents] = useState<Agent[]>(INITIAL_AGENTS);
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [decisionLogs, setDecisionLogs] = useState<DecisionLog[]>([]);
+  const [simulations, setSimulations] = useState<SimulationScenario[]>([]);
+  const [founderConfig, setFounderConfig] = useState<FounderBrainConfig>(buildDefaultFounder());
+  const [companyConfig, setCompanyConfig] = useState<CompanyBrainConfig>(DEFAULT_GUEST_COMPANY);
+  const [crmContacts, setCrmContacts] = useState<CRMContact[]>(INITIAL_CRM_CONTACTS);
 
   // Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Show onboarding wizard for authenticated users who haven't configured their brain yet
+  useEffect(() => {
+    const currentUser = MAATAuthService.getInstance().getCurrentUser();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (currentUser && currentUser.userId !== 'user-demo') {
+      const hasSeenOnboarding = localStorage.getItem(`maat_onboarding_done_${currentUser.userId}`);
+      if (!hasSeenOnboarding) {
+        timer = setTimeout(() => setShowOnboarding(true), 800);
+      }
+    }
+    return () => { if (timer) clearTimeout(timer); };
+  }, [activeUserId]);
+
+  // Load User Data from Backend Engine
+  const loadUserData = useCallback(async () => {
+    const currentUser = MAATAuthService.getInstance().getCurrentUser();
+
+    // STRICT GUEST MODE CHECK: If not authenticated, force 100% empty workspace
+    if (!currentUser) {
+      setSystemHealth(DEFAULT_GUEST_HEALTH);
+      setMissions([]);
+      setDecisionLogs([]);
+      setSimulations([]);
+      setFounderConfig(buildDefaultFounder());
+      setCompanyConfig(DEFAULT_GUEST_COMPANY);
+      setCrmContacts([]);
+      return;
+    }
+
+    if (currentUser.userId === 'user-demo') {
+      setCrmContacts(DEMO_DATASET.crmContacts);
+    }
+
+    const backendService = BackendService.getInstance();
+    const data = await backendService.getUserData();
+    if (data) {
+      if (data.system_health) setSystemHealth(data.system_health);
+      if (data.agents && data.agents.length > 0) setAgents(data.agents);
+      setMissions(data.missions || []);
+      setDecisionLogs(data.decision_logs || []);
+      setSimulations(data.simulations || []);
+      if (data.founder_brain) {
+        // Sanitize the founderName: if the backend stored a token/garbage, use the
+        // real Google display name instead (or leave empty for the user to fill in).
+        const googleName = MAATAuthService.getInstance().getCurrentUser()?.displayName || '';
+        const backendName = data.founder_brain.founderName || '';
+        const cleanName = isRealName(backendName)
+          ? backendName
+          : isRealName(googleName) ? googleName : '';
+        setFounderConfig({ ...data.founder_brain, founderName: cleanName });
+      }
+      if (data.company_brain) setCompanyConfig(data.company_brain);
+      if (data.crm_contacts) setCrmContacts(data.crm_contacts);
+    } else if (currentUser.userId !== 'user-demo') {
+      setSystemHealth(DEFAULT_GUEST_HEALTH);
+      setMissions([]);
+      setDecisionLogs([]);
+      setSimulations([]);
+      setFounderConfig(buildDefaultFounder());
+      setCompanyConfig(DEFAULT_GUEST_COMPANY);
+      setCrmContacts([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData, activeUserId]);
+
+  // Check periodically for SSO / Auth user changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentUser = MAATAuthService.getInstance().getCurrentUser();
+      const currentUserId = currentUser ? currentUser.userId : 'user-guest';
+      if (currentUserId !== activeUserId) {
+        setActiveUserId(currentUserId);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [activeUserId]);
 
   // Actions
   const handleCreateMission = async (newMissionData: {
@@ -49,75 +165,82 @@ export const App: React.FC = () => {
     objective: string;
     constraints: string[];
   }) => {
-    // Attempt live creation via Python FastAPI Backend Engine
     const backendMission = await BackendService.getInstance().createMission(newMissionData);
 
-    const createdMission: Mission = backendMission || {
-      id: `mission-${Date.now()}`,
-      title: newMissionData.title,
-      category: newMissionData.category,
-      status: 'active',
-      healthScore: 92,
-      target: newMissionData.target,
-      budget: newMissionData.budget,
-      spentBudget: 0,
-      timeline: newMissionData.timeline,
-      progress: 10,
-      confidenceScore: 94,
-      createdAt: new Date().toISOString().split('T')[0],
-      description: newMissionData.objective,
-      activeAgents: ['ceo-agent', 'chief-of-staff', 'cmo-agent'],
-      objective: newMissionData.objective,
-      constraints: newMissionData.constraints,
-      resources: ['Product Bible V2', 'Knowledge Graph'],
-      planSteps: [
-        { id: 'step-1', department: 'Stratégie', action: 'Analyse initiale du contexte par le CEO Agent', status: 'completed', assignedAgent: 'CEO Agent™' },
-        { id: 'step-2', department: 'Marketing', action: 'Génération du plan de contenu & Hooks', status: 'in_progress', assignedAgent: 'Marketing Director™' },
-        { id: 'step-3', department: 'Finance', action: 'Validation des seuils de ROI & budget', status: 'pending', assignedAgent: 'Finance Director (CFO)™' }
-      ],
-      learnings: ['Mission initialisée avec le Moteur Cognitif 6-Couches.']
-    };
+    if (backendMission) {
+      await loadUserData();
+    } else {
+      const createdMission: Mission = {
+        id: `mission-${Date.now()}`,
+        title: newMissionData.title,
+        category: newMissionData.category,
+        status: 'active',
+        healthScore: 92,
+        target: newMissionData.target,
+        budget: newMissionData.budget,
+        spentBudget: 0,
+        timeline: newMissionData.timeline,
+        progress: 10,
+        confidenceScore: 94,
+        createdAt: new Date().toISOString().split('T')[0],
+        description: newMissionData.objective,
+        activeAgents: ['ceo-agent', 'chief-of-staff', 'cmo-agent'],
+        objective: newMissionData.objective,
+        constraints: newMissionData.constraints,
+        resources: ['Product Bible V2', 'Knowledge Graph'],
+        planSteps: [
+          { id: 'step-1', department: 'Stratégie', action: 'Analyse initiale du contexte par le CEO Agent', status: 'completed', assignedAgent: 'CEO Agent' },
+          { id: 'step-2', department: 'Marketing', action: 'Génération du plan de contenu et Hooks', status: 'in_progress', assignedAgent: 'Marketing Director' },
+          { id: 'step-3', department: 'Finance', action: 'Validation des seuils de ROI et budget', status: 'pending', assignedAgent: 'Finance Director (CFO)' }
+        ],
+        learnings: ['Mission initialisée avec le Moteur Cognitif 6-Couches.']
+      };
 
-    setMissions([createdMission, ...missions]);
+      setMissions([createdMission, ...missions]);
 
-    // Add a decision log entry
-    const newLog: DecisionLog = {
-      id: `dec-${Date.now()}`,
-      timestamp: 'À l\'instant',
-      title: `Création de la Mission : "${newMissionData.title}"`,
-      agentId: 'ceo-agent',
-      agentName: 'CEO Agent™',
-      category: newMissionData.category,
-      confidenceScore: createdMission.confidenceScore || 94,
-      reasoning: `Nouvelle Mission™ générée par le Moteur Cognitif (Founder Brain: ${founderConfig.founderName}).`,
-      status: 'executing',
-      impacts: [`Budget alloué : $${newMissionData.budget}`, `Délai : ${newMissionData.timeline}`]
-    };
+      const newLog: DecisionLog = {
+        id: `dec-${Date.now()}`,
+        timestamp: 'À l\'instant',
+        title: `Création de la Mission : "${newMissionData.title}"`,
+        agentId: 'ceo-agent',
+        agentName: 'CEO Agent',
+        category: newMissionData.category,
+        confidenceScore: createdMission.confidenceScore || 94,
+        reasoning: `Nouvelle Mission générée par le Moteur Cognitif (Founder Brain: ${founderConfig.founderName || 'Dirigeant'}).`,
+        status: 'executing',
+        impacts: [`Budget alloué : $${newMissionData.budget}`, `Délai : ${newMissionData.timeline}`]
+      };
 
-    setDecisionLogs([newLog, ...decisionLogs]);
+      setDecisionLogs([newLog, ...decisionLogs]);
+    }
     setCurrentView('missions');
   };
 
-  const handleTogglePlanStep = (missionId: string, stepId: string) => {
-    setMissions(missions.map(m => {
-      if (m.id !== missionId) return m;
-      const updatedSteps = m.planSteps.map(s => {
-        if (s.id !== stepId) return s;
+  const handleTogglePlanStep = async (missionId: string, stepId: string) => {
+    const updatedMission = await BackendService.getInstance().toggleMissionStep(missionId, stepId);
+    if (updatedMission) {
+      setMissions(missions.map(m => m.id === missionId ? updatedMission : m));
+    } else {
+      setMissions(missions.map(m => {
+        if (m.id !== missionId) return m;
+        const updatedSteps = m.planSteps.map(s => {
+          if (s.id !== stepId) return s;
+          return {
+            ...s,
+            status: (s.status === 'completed' ? 'in_progress' : 'completed') as any
+          };
+        });
+
+        const completedCount = updatedSteps.filter(s => s.status === 'completed').length;
+        const newProgress = Math.round((completedCount / updatedSteps.length) * 100);
+
         return {
-          ...s,
-          status: (s.status === 'completed' ? 'in_progress' : 'completed') as any
+          ...m,
+          planSteps: updatedSteps,
+          progress: newProgress
         };
-      });
-
-      const completedCount = updatedSteps.filter(s => s.status === 'completed').length;
-      const newProgress = Math.round((completedCount / updatedSteps.length) * 100);
-
-      return {
-        ...m,
-        planSteps: updatedSteps,
-        progress: newProgress
-      };
-    }));
+      }));
+    }
   };
 
   const handleRunNewSimulation = async (title: string, variable: string, budgetChange: string) => {
@@ -127,24 +250,42 @@ export const App: React.FC = () => {
       changeValue: budgetChange
     });
 
-    const newScen: SimulationScenario = backendSim || {
-      id: `sim-${Date.now()}`,
-      title,
-      description: `Simulation personnalisée déclenchée le ${new Date().toLocaleDateString()}`,
-      variable,
-      changeValue: budgetChange,
-      estimatedROI: 3.1,
-      riskLevel: 'Faible',
-      confidenceScore: 91,
-      recommendation: 'Recommandé par le Decision Engine. Risque limité et retour positif sous 60 jours.',
-      projections: {
-        revenueIncrease: '+$24,000 / trimestre',
-        customerAcquisition: '+85 Clients',
-        timeline: '2 Mois'
-      }
-    };
+    if (backendSim) {
+      setSimulations([backendSim, ...simulations]);
+    } else {
+      const newScen: SimulationScenario = {
+        id: `sim-${Date.now()}`,
+        title,
+        description: `Simulation personnalisée déclenchée le ${new Date().toLocaleDateString()}`,
+        variable,
+        changeValue: budgetChange,
+        estimatedROI: 3.1,
+        riskLevel: 'Faible',
+        confidenceScore: 91,
+        recommendation: 'Recommandé par le Decision Engine. Risque limité et retour positif sous 60 jours.',
+        projections: {
+          revenueIncrease: '+$24,000 / trimestre',
+          customerAcquisition: '+85 Clients',
+          timeline: '2 Mois'
+        }
+      };
 
-    setSimulations([newScen, ...simulations]);
+      setSimulations([newScen, ...simulations]);
+    }
+  };
+
+  const handleSaveFounderConfig = async (newConfig: FounderBrainConfig) => {
+    setFounderConfig(newConfig);
+    await BackendService.getInstance().saveFounderBrain(newConfig);
+  };
+
+  const handleSaveCompanyConfig = async (newConfig: CompanyBrainConfig) => {
+    setCompanyConfig(newConfig);
+    await BackendService.getInstance().saveCompanyBrain(newConfig);
+  };
+
+  const handleBoardDebateTriggered = async (_topic: string) => {
+    await loadUserData();
   };
 
   const handleExecuteRecommendation = (recommendationTitle: string) => {
@@ -159,7 +300,40 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleAddContact = (contact: CRMContact) => {
+    setCrmContacts([contact, ...crmContacts]);
+  };
+
+  const handleUpdateContactStatus = (id: string, newStatus: CRMContactStatus) => {
+    setCrmContacts(crmContacts.map(c => c.id === id ? { ...c, status: newStatus } : c));
+  };
+
   const activeMissionsCount = missions.filter(m => m.status === 'active').length;
+
+  const handleOnboardingComplete = async (
+    founder: FounderBrainConfig,
+    company: CompanyBrainConfig,
+    firstMission: { title: string; category: any; target: string; budget: number; timeline: string; objective: string; constraints: string[] } | null
+  ) => {
+    setShowOnboarding(false);
+    await handleSaveFounderConfig(founder);
+    await handleSaveCompanyConfig(company);
+    if (firstMission) {
+      await handleCreateMission(firstMission);
+    }
+    const currentUser = MAATAuthService.getInstance().getCurrentUser();
+    if (currentUser) {
+      localStorage.setItem(`maat_onboarding_done_${currentUser.userId}`, '1');
+    }
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    const currentUser = MAATAuthService.getInstance().getCurrentUser();
+    if (currentUser) {
+      localStorage.setItem(`maat_onboarding_done_${currentUser.userId}`, '1');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-obsidian text-slate-100 flex flex-col font-sans">
@@ -196,6 +370,20 @@ export const App: React.FC = () => {
             />
           )}
 
+          {currentView === 'audit' && (
+            <HealthAuditModule
+              onAddMissionFromAudit={(title, category, target, budget, objective) => handleCreateMission({
+                title,
+                category: category as any,
+                target,
+                budget,
+                timeline: '30 Jours',
+                objective,
+                constraints: ['Budget plafonné', 'Exécution urgente par l\'IA']
+              })}
+            />
+          )}
+
           {currentView === 'missions' && (
             <MissionsView
               missions={missions}
@@ -204,10 +392,33 @@ export const App: React.FC = () => {
             />
           )}
 
+          {currentView === 'actions' && (
+            <ActionGeneratorModule
+              contacts={crmContacts}
+              onAddMissionFromAction={(title, desc) => handleCreateMission({
+                title,
+                category: 'sales',
+                target: title,
+                budget: 15000,
+                timeline: '30 Jours',
+                objective: desc,
+                constraints: ['Budget maîtrisé', 'Respect du Founder Brain']
+              })}
+            />
+          )}
+
           {currentView === 'agents' && (
             <BoardView
               agents={agents}
-              onTriggerDebate={(topic) => console.log('Debate on:', topic)}
+              onTriggerDebate={handleBoardDebateTriggered}
+            />
+          )}
+
+          {currentView === 'sales_os' && (
+            <SalesOSModule
+              contacts={crmContacts}
+              onAddContact={handleAddContact}
+              onUpdateContactStatus={handleUpdateContactStatus}
             />
           )}
 
@@ -215,8 +426,8 @@ export const App: React.FC = () => {
             <BrainConfigurator
               founderConfig={founderConfig}
               companyConfig={companyConfig}
-              onSaveFounderConfig={setFounderConfig}
-              onSaveCompanyConfig={setCompanyConfig}
+              onSaveFounderConfig={handleSaveFounderConfig}
+              onSaveCompanyConfig={handleSaveCompanyConfig}
             />
           )}
 
@@ -224,11 +435,25 @@ export const App: React.FC = () => {
             <SimulationView
               scenarios={simulations}
               onRunNewSimulation={handleRunNewSimulation}
+              onExecuteRecommendation={handleExecuteRecommendation}
             />
           )}
 
           {currentView === 'journal' && (
             <JournalBoard logs={decisionLogs} />
+          )}
+
+          {currentView === 'export_center' && (
+            <ExportCenter
+              missions={missions}
+              systemHealth={systemHealth}
+              founderConfig={founderConfig}
+              companyConfig={companyConfig}
+              crmContacts={crmContacts}
+              simulations={simulations}
+              decisionLogs={decisionLogs}
+              agents={agents}
+            />
           )}
         </main>
       </div>
@@ -246,6 +471,16 @@ export const App: React.FC = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateMission}
       />
+
+      {/* Onboarding Wizard - shown automatically for new authenticated users */}
+      {showOnboarding && (
+        <OnboardingWizard
+          founderConfig={founderConfig}
+          companyConfig={companyConfig}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
     </div>
   );
 };
