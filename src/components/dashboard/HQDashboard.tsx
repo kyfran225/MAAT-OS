@@ -4,6 +4,7 @@ import { Target, Users, Cpu, FileText, CheckCircle2, AlertTriangle, ArrowRight, 
 import { MAATFEEDIntelligenceService } from '../../services/maatfeedIntelligenceService';
 import { MAATAuthService } from '../../services/maatAuthService';
 import { knowledgeGraphService } from '../../services/knowledgeGraphService';
+import { BackendService } from '../../services/backendService';
 
 interface HQDashboardProps {
   systemHealth: SystemHealth;
@@ -25,8 +26,11 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
   onExecuteRecommendation
 }) => {
   const [ingestedAssets, setIngestedAssets] = useState<{ id: string; name: string; type: string }[]>([]);
+  const [liveSignals, setLiveSignals] = useState<any[]>([]);
+  const [isAnalyzingSignal, setIsAnalyzingSignal] = useState<string | null>(null);
 
   useEffect(() => {
+    loadSignals();
     const unsubscribe = knowledgeGraphService.subscribe((newNode) => {
       if (newNode.category === 'document') {
         setIngestedAssets(prev => [{ id: newNode.id, name: newNode.label, type: newNode.type }, ...prev].slice(0, 5));
@@ -34,6 +38,22 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
     });
     return () => unsubscribe();
   }, []);
+
+  const loadSignals = async () => {
+    const data = await BackendService.getInstance().getCulturalSignals();
+    if (data) setLiveSignals(data);
+  };
+
+  const handleTransformSignal = async (signalId: string) => {
+    setIsAnalyzingSignal(signalId);
+    const analysis = await BackendService.getInstance().analyzeSignal(signalId);
+    if (analysis && analysis.recommended_mission) {
+      const mission = analysis.recommended_mission;
+      onExecuteRecommendation(mission.title); // This currently triggers a generic mission creation
+      // In a more advanced version, we would pre-fill a modal with 'mission' data
+    }
+    setIsAnalyzingSignal(null);
+  };
 
   const authService = MAATAuthService.getInstance();
   const isAuthenticated = authService.isAuthenticated();
@@ -46,7 +66,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
     ? currentUser.displayName
     : 'Dirigeant';
 
-  const liveSignalsCount = MAATFEEDIntelligenceService.getInstance().getLiveCulturalSignals().length;
+  const liveSignalsCount = liveSignals.length;
 
   return (
     <div className="space-y-6 pb-12">
@@ -289,29 +309,34 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-          {MAATFEEDIntelligenceService.getInstance().getLiveCulturalSignals().map((sig) => (
+          {liveSignals.map((sig) => (
             <div key={sig.id} className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3 flex flex-col justify-between">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono-code text-slate-500">{sig.timestamp}</span>
-                  <span className="text-xs font-mono-code font-bold text-emerald-400">{sig.volumeGrowth} Volume</span>
+                  <span className="text-[10px] font-mono-code text-slate-500">{sig.region}</span>
+                  <span className="text-xs font-mono-code font-bold text-emerald-400">{sig.volume_growth} Volume</span>
                 </div>
 
                 <h4 className="text-xs font-bold text-white">{sig.topic}</h4>
                 <p className="text-[11px] text-slate-300 italic border-l-2 border-amber-500/40 pl-2.5">
-                  {sig.samplePostSnippet}
+                  {sig.content}
                 </p>
               </div>
 
               <div className="pt-2 border-t border-slate-900 space-y-2">
-                <div className="text-[10px] font-mono-code font-bold text-amber-400">Action Recommandée :</div>
-                <p className="text-[11px] text-slate-200 font-medium">{sig.recommendedMissionAction}</p>
+                <div className="text-[10px] font-mono-code font-bold text-amber-400">Analyse de Secteur :</div>
+                <p className="text-[11px] text-slate-200 font-medium">{sig.sector}</p>
                 <button
-                  onClick={() => onExecuteRecommendation(sig.topic)}
+                  onClick={() => handleTransformSignal(sig.id)}
+                  disabled={isAnalyzingSignal === sig.id}
                   className="w-full py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-bold transition-all flex items-center justify-center gap-1"
                 >
-                  <Sparkles className="w-3 h-3" />
-                  <span>Transformer en Mission</span>
+                  {isAnalyzingSignal === sig.id ? (
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3" />
+                  )}
+                  <span>{isAnalyzingSignal === sig.id ? 'Analyse Opportunité...' : 'Transformer en Mission'}</span>
                 </button>
               </div>
             </div>

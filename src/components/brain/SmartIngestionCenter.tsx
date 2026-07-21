@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FolderUp, 
   FileText, 
@@ -13,7 +13,7 @@ import {
   ArrowRight,
   RefreshCw
 } from 'lucide-react';
-import { knowledgeGraphService } from '../../services/knowledgeGraphService';
+import { BackendService } from '../../services/backendService';
 
 interface IngestedSource {
   id: string;
@@ -21,8 +21,8 @@ interface IngestedSource {
   type: 'pdf' | 'excel' | 'word' | 'whatsapp' | 'email' | 'cloud';
   size: string;
   status: 'indexed' | 'processing' | 'pending';
-  extractedBrain: 'Company Brain' | 'Customer Brain' | 'Founder Brain' | 'Finance OS';
-  extractedInsights: string[];
+  extractedBrain: string;
+  extractedInsights?: string[];
 }
 
 export const SAMPLE_SOURCES: IngestedSource[] = [
@@ -84,8 +84,27 @@ export const SmartIngestionCenter: React.FC = () => {
   const [oauthError, setOauthError] = useState<string | null>(null);
   const [showOptionsFor, setShowOptionsFor] = useState<string | null>(null);
 
+  useEffect(() => {
+    loadSources();
+  }, []);
+
+  const loadSources = async () => {
+    const backendService = BackendService.getInstance();
+    const data = await backendService.getKnowledgeSources();
+    if (data) {
+      setSources(data.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        type: s.name.split('.').pop() === 'xlsx' ? 'excel' : 'pdf',
+        size: 'N/A',
+        status: 'indexed',
+        extractedBrain: s.brain_type,
+        extractedInsights: [`Source indexée le ${s.timestamp}`]
+      })));
+    }
+  };
+
   const handleLoadDemoData = () => {
-    // Cumulative: append demo data instead of replacing
     setSources(prev => [...prev, ...SAMPLE_SOURCES]);
   };
 
@@ -195,63 +214,31 @@ export const SmartIngestionCenter: React.FC = () => {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     setIsProcessingNew(true);
     const context = activeContext || 'folder';
 
-    // Simulate processing for all selected files
-    setTimeout(() => {
-      const newEntries: IngestedSource[] = Array.from(files).map((file, index) => {
-        const extension = file.name.split('.').pop()?.toLowerCase();
-        let type: IngestedSource['type'] = 'pdf';
+    const backendService = BackendService.getInstance();
 
-        if (['xlsx', 'xls', 'csv'].includes(extension || '')) type = 'excel';
-        else if (['doc', 'docx'].includes(extension || '')) type = 'word';
-        else if (['eml', 'msg'].includes(extension || '')) type = 'email';
-        else if (['zip', 'txt'].includes(extension || '') && context === 'whatsapp') type = 'whatsapp';
-        else if (['zip', 'rar', '7z'].includes(extension || '')) type = 'cloud';
+    for (const file of Array.from(files)) {
+      // Pour la démo, on simule l'extraction de texte côté client avant l'envoi
+      const content = `Contenu extrait de ${file.name}.
+      Prix du service A: $1500.
+      Prix du service B: $2500.
+      Stock disponible: 45 unités.`;
 
-        // Context-aware Brain and Insights
-        let brain: IngestedSource['extractedBrain'] = 'Company Brain';
-        let insights: string[] = [
-          `Document ${extension?.toUpperCase()} analysé avec succès.`,
-          'Structure sémantique indexée dans le Multi-Brain.'
-        ];
+      const brainType = context === 'whatsapp' ? 'Customer Brain' : 'Company Brain';
 
-        if (context === 'whatsapp' || type === 'whatsapp') {
-          brain = 'Customer Brain';
-          insights = [
-            'Ton de voix client identifié : Relationnel et exigeant.',
-            '3 points de douleur récurrents extraits de la conversation.'
-          ];
-        } else if (context === 'email' || type === 'email') {
-          brain = 'Company Brain';
-          insights = [
-            'Historique de négociation extrait et classé par priorité.',
-            'Détection de 2 engagements contractuels à valider.'
-          ];
-        }
+      await backendService.ingestDocument(file.name, content, brainType);
+    }
 
-        return {
-          id: `src-up-${Date.now()}-${index}`,
-          name: file.name,
-          type,
-          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-          status: 'indexed',
-          extractedBrain: brain,
-          extractedInsights: insights
-        };
-      });
-
-      setSources(prev => [...newEntries, ...prev]);
-      newEntries.forEach(entry => knowledgeGraphService.addNodeFromSource(entry));
-      setIsProcessingNew(false);
-      setActiveContext(null);
-      if (fileInputRef.current) fileInputRef.current.value = ''; // Reset input
-    }, 1500);
+    await loadSources();
+    setIsProcessingNew(false);
+    setActiveContext(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleConnectorAction = (type: IngestedSource['type'] | 'folder', skipOAuth = false) => {

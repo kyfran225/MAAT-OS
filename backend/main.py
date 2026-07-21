@@ -18,8 +18,12 @@ from app.schemas.models import (
     DecisionLogSchema,
     CRMContactSchema
 )
-from app.agents.board import AIBoardEngine
+from app.agents.board import AIBoardEngine, ExecutionAgent
 from app.db.user_store import user_store
+from app.services.form_service import form_service
+from app.services.rag_service import rag_service
+from app.services.maatfeed_service import maatfeed_service
+from app.services.workflow_service import workflow_engine
 
 app = FastAPI(
     title="MAAT Studio AI - Backend Agent Core API",
@@ -291,7 +295,8 @@ def run_board_debate(
     debate_res = board_engine.simulate_board_debate(
         req.topic,
         founder_brain=user_data.get("founder_brain"),
-        company_brain=user_data.get("company_brain")
+        company_brain=user_data.get("company_brain"),
+        user_id=uid
     )
 
     # Save decision log to user store
@@ -315,24 +320,13 @@ def run_board_debate(
 
 @app.get("/api/v1/maatfeed/signals")
 def get_cultural_signals():
-    return {
-        "signals": [
-            {
-                "id": "sig-384",
-                "topic": "Automatisation Éthique & Onboarding Rapide",
-                "volumeGrowth": "+140%",
-                "sentiment": "Fortement Positif",
-                "relevanceScore": 95
-            },
-            {
-                "id": "sig-385",
-                "topic": "Mobile Money & Paiements Locaux Afrique de l'Ouest",
-                "volumeGrowth": "+88%",
-                "sentiment": "Essentiel",
-                "relevanceScore": 92
-            }
-        ]
-    }
+    signals = maatfeed_service.get_global_signals()
+    return {"signals": signals}
+
+@app.get("/api/v1/maatfeed/analyze/{signal_id}")
+def analyze_market_signal(signal_id: str, x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    return maatfeed_service.analyze_opportunity(uid, signal_id)
 
 @app.get("/api/v1/graph/nodes")
 def get_knowledge_graph_nodes():
@@ -372,6 +366,18 @@ def create_crm_contact(
     current_contacts = user_data.get("crm_contacts", [])
     current_contacts.insert(0, contact.dict())
     user_store.update_crm_contacts(uid, current_contacts)
+
+    # --- Autopilot Trigger ---
+    # On transmet l'événement au moteur de workflow pour analyse et exécution automatique
+    workflow_engine.process_event(uid, "LEAD_SUBMITTED", {
+        "name": contact.name,
+        "company": contact.company,
+        "email": contact.email,
+        "phone": contact.phone,
+        "estimated_budget_xof": contact.estimatedBudget,
+        "confidence_score": contact.aiAnalysis.qualificationScore
+    })
+
     return contact
 
 @app.put("/api/v1/crm/contacts/{contact_id}/status")
@@ -396,6 +402,75 @@ def update_crm_contact_status(
 
     user_store.update_crm_contacts(uid, contacts)
     return updated
+
+# --- New Roadmap Endpoints ---
+
+execution_agent = ExecutionAgent()
+
+@app.post("/api/execute-action")
+async def execute_action(request: dict):
+    action_id = request.get("action_id")
+    action_type = request.get("action_type")
+    payload = request.get("payload", {})
+
+    result = execution_agent.execute_action(action_id, action_type, payload)
+    return result
+
+@app.post("/api/v1/forms")
+async def create_form(request: dict, x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    title = request.get("title", "Nouveau Formulaire")
+    fields = request.get("fields", [])
+    form_id = form_service.create_form_schema(uid, title, fields)
+    return {"form_id": form_id}
+
+@app.get("/api/v1/forms")
+async def get_forms(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    data = user_store.get_or_create_user_data(uid)
+    return data.get("public_forms", [])
+
+@app.post("/api/v1/ingest")
+async def ingest_document(request: dict, x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    file_name = request.get("file_name", "document.txt")
+    content = request.get("content", "")
+    brain_type = request.get("brain_type", "Company Brain")
+
+    doc_id = rag_service.ingest_document(uid, file_name, content, brain_type)
+    return {"doc_id": doc_id, "status": "indexed"}
+
+@app.get("/api/v1/knowledge")
+def get_knowledge_sources(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    data = user_store.get_or_create_user_data(uid)
+    return data.get("ingested_sources", [])
+
+# --- Autopilot Endpoints ---
+
+@app.get("/api/v1/autopilot/settings")
+def get_autopilot_settings(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    data = user_store.get_or_create_user_data(uid)
+    return data.get("autopilot_settings", {
+        "enabled": False,
+        "min_confidence": 95,
+        "max_budget_xof": 50000,
+        "currency": "XOF",
+        "trust_level": 0
+    })
+
+@app.put("/api/v1/autopilot/settings")
+def update_autopilot_settings(settings: dict, x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    user_store.save_user_field(uid, "autopilot_settings", settings)
+    return settings
+
+@app.get("/api/v1/autopilot/activity")
+def get_autopilot_activity(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
+    uid = get_user_id(x_user_id, user_id)
+    data = user_store.get_or_create_user_data(uid)
+    return data.get("autopilot_activity", [])
 
 if __name__ == "__main__":
     import uvicorn

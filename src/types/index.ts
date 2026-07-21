@@ -1,4 +1,4 @@
-export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal' | 'sales_os' | 'actions' | 'audit' | 'export_center' | 'rag_chat' | 'onboarding' | 'graph';
+export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal' | 'sales_os' | 'actions' | 'audit' | 'export_center' | 'rag_chat' | 'onboarding' | 'graph' | 'settings' | 'autopilot';
 
 export type MissionCategory = 'marketing' | 'sales' | 'product' | 'finance' | 'hr' | 'strategy';
 export type MissionStatus = 'active' | 'debating' | 'simulating' | 'paused' | 'completed';
@@ -185,6 +185,28 @@ export interface ExecutiveAuditReport {
     estimatedROI: string;
     priority: 'Haute' | 'Moyenne' | 'Urgent';
   }[];
+}
+
+export interface PublicForm {
+  id: string;
+  title: string;
+  fields: {
+    id: string;
+    label: string;
+    type: 'text' | 'email' | 'number' | 'textarea';
+    required: boolean;
+  }[];
+  active: boolean;
+  submissionCount: number;
+}
+
+export interface ConnectorSettings {
+  hubspotKey: string;
+  whatsappKey: string;
+  sendgridKey: string;
+  isHubspotConnected: boolean;
+  isWhatsappConnected: boolean;
+  isSendgridConnected: boolean;
 }
 
 

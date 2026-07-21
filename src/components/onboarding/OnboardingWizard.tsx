@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
-  FounderBrainConfig
+  FounderBrainConfig,
+  CompanyBrainConfig
 } from '../../types';
 import {
   Sparkles,
@@ -20,7 +21,10 @@ import {
 } from 'lucide-react';
 
 interface OnboardingWizardProps {
-  onComplete: (founder: FounderBrainConfig) => void;
+  founderConfig?: FounderBrainConfig;
+  companyConfig?: CompanyBrainConfig;
+  onComplete: (founder: FounderBrainConfig, company: CompanyBrainConfig, firstMission: any | null) => void;
+  onSkip?: () => void;
 }
 
 const STEPS = [
@@ -51,6 +55,17 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
   const [nonNegotiables, setNonNegotiables] = useState<string[]>(['Qualité Premium', 'Éthique IA', 'ROI Focalisé']);
   const [newNonNeg, setNewNonNeg] = useState('');
 
+  const addNonNeg = () => {
+    if (newNonNeg.trim()) {
+      setNonNegotiables([...nonNegotiables, newNonNeg.trim()]);
+      setNewNonNeg('');
+    }
+  };
+
+  const removeNonNeg = (index: number) => {
+    setNonNegotiables(nonNegotiables.filter((_, i) => i !== index));
+  };
+
   const handleNext = () => {
     if (step < 5) setStep(step + 1);
     else finishOnboarding();
@@ -63,15 +78,25 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
   const finishOnboarding = () => {
     setIsFinishing(true);
     setTimeout(() => {
-      onComplete({
-        founderName,
-        visionStatement: vision,
-        riskTolerance: strategicStyle as any,
-        strategicStyle: strategicStyle,
-        coreValues: ['Innovation', 'Excellence'],
-        nonNegotiables,
-        preferredCommunication: 'Direct'
-      });
+      onComplete(
+        {
+          founderName,
+          visionStatement: vision,
+          riskTolerance: strategicStyle as any,
+          strategicStyle: strategicStyle,
+          coreValues: ['Innovation', 'Excellence'],
+          nonNegotiables,
+          preferredCommunication: 'Direct'
+        } as any,
+        {
+          companyName: `${founderName} Enterprise`,
+          industry: 'Services',
+          valueProposition: vision,
+          mainProducts: [],
+          brandVoice: 'Professional'
+        } as any,
+        null
+      );
     }, 2000);
   };
 

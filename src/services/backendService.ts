@@ -312,7 +312,7 @@ export class BackendService {
   /**
    * Signaux d'Intelligence Culturelle MAATFEED
    */
-  public async getCulturalSignals(): Promise<BackendCulturalSignal[] | null> {
+  public async getCulturalSignals(): Promise<any[] | null> {
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/maatfeed/signals`, {
         headers: this.getHeaders(),
@@ -320,6 +320,18 @@ export class BackendService {
       if (!res.ok) return null;
       const data = await res.json();
       return data.signals;
+    } catch {
+      return null;
+    }
+  }
+
+  public async analyzeSignal(signalId: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/maatfeed/analyze/${signalId}`, {
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
     } catch {
       return null;
     }
@@ -374,6 +386,35 @@ export class BackendService {
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/crm/contacts/${contactId}/status?new_status=${newStatus}`, {
         method: 'PUT',
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * RAG & Document Ingestion
+   */
+  public async ingestDocument(fileName: string, content: string, brainType: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/ingest`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({ file_name: fileName, content, brain_type: brainType }),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  public async getKnowledgeSources(): Promise<any[] | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/knowledge`, {
         headers: this.getHeaders(),
       });
       if (!res.ok) return null;

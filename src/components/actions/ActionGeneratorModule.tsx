@@ -86,7 +86,39 @@ export const ActionGeneratorModule: React.FC<ActionGeneratorModuleProps> = ({
   const [selectedContactId, setSelectedContactId] = useState<string>(contacts[0]?.id || '');
   const [customPrompt, setCustomPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExecuting, setIsExecuting] = useState<string | null>(null);
+  const [executionResult, setExecutionResult] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleExecuteAction = async (action: GeneratedAction) => {
+    setIsExecuting(action.id);
+
+    try {
+      // Simulation d'appel backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/execute-action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action_id: action.id,
+          action_type: action.type === 'relance_whatsapp' ? 'whatsapp' : 'email',
+          payload: {
+            to: action.targetContactName,
+            text: action.content
+          }
+        })
+      });
+
+      const data = await response.json();
+      setExecutionResult(prev => ({
+        ...prev,
+        [action.id]: `Succès: ${action.type === 'relance_whatsapp' ? 'WhatsApp envoyé' : 'Email envoyé'} via ${data.provider || 'Système'}`
+      }));
+    } catch (error) {
+      setExecutionResult(prev => ({ ...prev, [action.id]: "Erreur lors de l'exécution." }));
+    } finally {
+      setIsExecuting(null);
+    }
+  };
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -347,6 +379,26 @@ Sur la base de vos documents ingérés et de vos échanges récents, nous recomm
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {executionResult[act.id] ? (
+                      <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold flex items-center gap-1.5 animate-in zoom-in duration-300">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{executionResult[act.id]}</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleExecuteAction(act)}
+                        disabled={isExecuting === act.id}
+                        className="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 text-xs font-bold flex items-center gap-1.5 border border-purple-500/30 disabled:opacity-50"
+                      >
+                        {isExecuting === act.id ? (
+                          <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Zap className="w-3.5 h-3.5" />
+                        )}
+                        <span>{isExecuting === act.id ? 'Exécution...' : 'Exécuter'}</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => handleCopyContent(act.id, act.content)}
                       className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-800"

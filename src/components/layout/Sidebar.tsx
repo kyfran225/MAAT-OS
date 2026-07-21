@@ -1,19 +1,21 @@
 import React from 'react';
 import { AppView } from '../../types';
-import { LayoutDashboard, Target, Users, Brain, Cpu, FileText, Globe, Zap, Activity, FileDown, MessageSquare, Network, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Target, Users, Brain, Cpu, FileText, Globe, Zap, Activity, FileDown, MessageSquare, Network, Sparkles, Settings } from 'lucide-react';
 
 interface SidebarProps {
   currentView: AppView;
   setCurrentView: (view: AppView) => void;
   activeMissionsCount: number;
   unresolvedDecisionsCount: number;
+  isAutopilotEnabled?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   currentView,
   setCurrentView,
   activeMissionsCount,
-  unresolvedDecisionsCount
+  unresolvedDecisionsCount,
+  isAutopilotEnabled = false
 }) => {
   const navItems: { id: AppView; label: string; icon: React.FC<{ className?: string }>; badge?: number | string }[] = [
     { id: 'dashboard', label: 'QG Studio', icon: LayoutDashboard },
@@ -29,6 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'journal', label: 'Journal de Bord', icon: FileText, badge: unresolvedDecisionsCount },
     { id: 'export_center', label: 'Export PDF', icon: FileDown },
     { id: 'onboarding', label: 'Onboarding', icon: Sparkles },
+    { id: 'settings', label: 'Paramètres API', icon: Settings },
+    { id: 'autopilot', label: 'Mode Autopilote', icon: Zap, badge: isAutopilotEnabled ? 'AUTO' : undefined },
   ];
 
   return (

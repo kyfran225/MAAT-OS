@@ -1,9 +1,18 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from abc import ABC, abstractmethod
 
-class EnterpriseKnowledgeGraph:
+class GraphStore(ABC):
+    @abstractmethod
+    def get_nodes(self) -> List[Dict[str, Any]]:
+        pass
+
+    @abstractmethod
+    def query(self, node_id: str) -> Dict[str, Any]:
+        pass
+
+class SQLiteGraphStore(GraphStore):
     """
-    Graphe de connaissances d'entreprise (Enterprise Knowledge Graph™)
-    Cartographie les relations entre Founder Brain, Missions, Produits, Segments Clients et Signaux MAATFEED.
+    Implémentation actuelle utilisant une structure en mémoire ou SQLite.
     """
     def __init__(self):
         self.nodes = [
@@ -19,10 +28,10 @@ class EnterpriseKnowledgeGraph:
             {"id": "n-dept-hr", "type": "Department", "label": "HR OS (Recrutement & Culture)", "connections": ["n-segment-pme"]},
         ]
 
-    def get_all_nodes() -> List[Dict[str, Any]]:
+    def get_nodes(self) -> List[Dict[str, Any]]:
         return self.nodes
 
-    def query_graph(self, node_id: str) -> Dict[str, Any]:
+    def query(self, node_id: str) -> Dict[str, Any]:
         node = next((n for n in self.nodes if n["id"] == node_id), None)
         if not node:
             return {"error": "Node not found"}
@@ -33,4 +42,19 @@ class EnterpriseKnowledgeGraph:
             "connectedNodes": connected_nodes
         }
 
+class EnterpriseKnowledgeGraph:
+    """
+    Graphe de connaissances d'entreprise (Enterprise Knowledge Graph™).
+    Utilise un driver (GraphStore) pour le stockage.
+    """
+    def __init__(self, store: Optional[GraphStore] = None):
+        self.store = store or SQLiteGraphStore()
+
+    def get_all_nodes(self) -> List[Dict[str, Any]]:
+        return self.store.get_nodes()
+
+    def query_graph(self, node_id: str) -> Dict[str, Any]:
+        return self.store.query(node_id)
+
+# Instance par défaut
 knowledge_graph_db = EnterpriseKnowledgeGraph()

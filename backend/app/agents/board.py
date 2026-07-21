@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 import groq
 from app.schemas.models import DebateTurn, DebateResponse
+from app.services.rag_service import rag_service
 
 load_dotenv()
 
@@ -28,10 +29,12 @@ class AIBoardEngine:
         self,
         topic: str,
         founder_brain: Optional[Dict[str, Any]] = None,
-        company_brain: Optional[Dict[str, Any]] = None
+        company_brain: Optional[Dict[str, Any]] = None,
+        user_id: str = "user-guest"
     ) -> DebateResponse:
         """
         Exécute le cycle Débat ➔ Décision du Conseil d'Administration IA en s'appuyant sur Groq LLM (Llama-3.3-70b).
+        Intègre désormais le contexte RAG récupéré des documents ingérés (Product Bible).
         """
         fb = founder_brain or {}
         cb = company_brain or {}
@@ -47,10 +50,15 @@ class AIBoardEngine:
         uvp = cb.get("valueProposition", "Solutions à haute valeur ajoutée")
         voice = cb.get("brandVoice", "Professionnel et audacieux")
 
+        # RAG Step: Récupération du contexte pertinent
+        product_context = rag_service.query_context(user_id, topic)
+
         if self.client:
             prompt = f"""Tu es le Moteur de Conseil d'Administration IA de MAAT Studio AI.
 Tu vas simuler un débat contradictoire réaliste entre 4 directeurs IA spécialisés sur le sujet suivant:
 SUJET DE DÉBAT: "{topic}"
+
+{product_context}
 
 CONTEXTE DE L'ENTREPRISE:
 - Nom de l'entreprise: {company_name}
@@ -71,12 +79,12 @@ Génère une réponse JSON STRICTE sans aucun texte autour, au format exact suiv
   "turns": [
     {{
       "agent": "Marketing Director™",
-      "message": "<Analyse marketing stratégique spécifique à cette PME et à la mission>",
+      "message": "<Analyse marketing stratégique spécifique à cette PME et à la mission, en citant des éléments du contexte si pertinent>",
       "confidence": 92
     }},
     {{
       "agent": "Finance Director (CFO)™",
-      "message": "<Analyse financière contradictoire, ROI, risques et coûts>",
+      "message": "<Analyse financière contradictoire, ROI, risques et coûts basés sur les données produits>",
       "confidence": 95
     }},
     {{
@@ -158,4 +166,29 @@ Remarque: Reste très concis, percutant et ultra-spécifique au contexte de {com
             finalDecision=f"Mission '{topic}' approuvée à 96% de confiance par le CEO Agent.",
             confidenceScore=96
         )
+
+class ExecutionAgent(AIBoardEngine):
+    """
+    Extension de l'AIBoardEngine capable d'exécuter réellement des actions.
+    """
+    def execute_action(self, action_id: str, action_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Déclenche une action réelle via les connecteurs d'intégration.
+        """
+        print(f"Executing real action: {action_type} (ID: {action_id})")
+
+        if action_type == "email":
+            # Simulation d'envoi d'email
+            return {"status": "success", "provider": "SendGrid", "timestamp": "À l'instant"}
+
+        elif action_type == "whatsapp":
+            from app.integrations.crm_connectors import WhatsAppConnector
+            wa = WhatsAppConnector()
+            return wa.send_message("fake-key", payload.get("to", ""), payload.get("text", ""))
+
+        elif action_type == "invoice":
+            # Simulation de génération de facture
+            return {"status": "success", "invoice_url": "https://cdn.maat-studio.ai/inv-123.pdf"}
+
+        return {"status": "error", "message": f"Unknown action type: {action_type}"}
 

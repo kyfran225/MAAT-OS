@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { CRMContact, CRMContactStatus, CRMPipelineStage } from '../../types';
-import { 
+import {
   Users, 
   TrendingUp, 
   Sparkles, 
@@ -13,8 +12,14 @@ import {
   Mail, 
   Phone, 
   X,
-  Target
+  Target,
+  FileText,
+  Copy,
+  Check,
+  Zap,
+  Layout
 } from 'lucide-react';
+import { CRMContact, CRMContactStatus, CRMPipelineStage, PublicForm } from '../../types';
 
 interface SalesOSModuleProps {
   contacts: CRMContact[];
@@ -29,15 +34,32 @@ const STAGES: CRMPipelineStage[] = [
   { id: 'client', label: 'Clients Gagnés', count: 0, totalValue: 0, color: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10' }
 ];
 
+const SAMPLE_FORMS: PublicForm[] = [
+  {
+    id: 'form-001',
+    title: 'Demande de Devis PME Express',
+    active: true,
+    submissionCount: 12,
+    fields: [
+      { id: 'f1', label: 'Nom complet', type: 'text', required: true },
+      { id: 'f2', label: 'Email Pro', type: 'email', required: true },
+      { id: 'f3', label: 'Budget estimé', type: 'number', required: false }
+    ]
+  }
+];
+
 export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
   contacts,
   onAddContact,
   onUpdateContactStatus
 }) => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'list'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'list' | 'forms'>('pipeline');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContact, setSelectedContact] = useState<CRMContact | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showFormBuilder, setShowFormBuilder] = useState(false);
+  const [forms, setForms] = useState<PublicForm[]>(SAMPLE_FORMS);
+  const [copiedFormId, setCopiedFormId] = useState<string | null>(null);
 
   // New Lead Form state
   const [newName, setNewName] = useState('');
@@ -47,6 +69,9 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
   const [newIndustry, setNewIndustry] = useState('Services & Consulting');
   const [newBudget, setNewBudget] = useState(15000);
   const [newNotes, setNewNotes] = useState('');
+
+  // Form Builder state
+  const [formTitle, setFormTitle] = useState('');
 
   const filteredContacts = contacts.filter((c) => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,6 +130,30 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
     setNewNotes('');
   };
 
+  const handleCreateForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newForm: PublicForm = {
+      id: `form-${Math.random().toString(36).substr(2, 9)}`,
+      title: formTitle,
+      active: true,
+      submissionCount: 0,
+      fields: [
+        { id: 'f1', label: 'Nom complet', type: 'text', required: true },
+        { id: 'f2', label: 'Email', type: 'email', required: true }
+      ]
+    };
+    setForms([...forms, newForm]);
+    setShowFormBuilder(false);
+    setFormTitle('');
+  };
+
+  const handleCopyLink = (id: string) => {
+    const url = `https://maat-studio.ai/p/form/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedFormId(id);
+    setTimeout(() => setCopiedFormId(null), 2000);
+  };
+
   return (
     <div className="space-y-6 pb-16">
       {/* Banner */}
@@ -120,13 +169,23 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-xs hover:brightness-110 flex items-center gap-2 shrink-0 shadow-lg shadow-cyan-500/20"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Nouveau Lead PME</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowFormBuilder(true)}
+            className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-xs hover:bg-slate-800 flex items-center gap-2 shrink-0 shadow-lg"
+          >
+            <Layout className="w-4 h-4 text-purple-400" />
+            <span>Créer Formulaire</span>
+          </button>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-xs hover:brightness-110 flex items-center gap-2 shrink-0 shadow-lg shadow-cyan-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nouveau Lead PME</span>
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -165,11 +224,11 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
 
         <div className="glass-panel p-5 rounded-2xl space-y-1">
           <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
-            <span>Taux de Conversion</span>
-            <Target className="w-4 h-4 text-emerald-400" />
+            <span>Formulaires Actifs</span>
+            <FileText className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-emerald-400 font-mono-code">{conversionRate}%</div>
-          <div className="text-[11px] text-emerald-400 font-mono-code">Signatures conclues</div>
+          <div className="text-2xl font-bold text-emerald-400 font-mono-code">{forms.filter(f => f.active).length}</div>
+          <div className="text-[11px] text-emerald-400 font-mono-code">Prêt pour capture web</div>
         </div>
       </div>
 
@@ -183,7 +242,7 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
               activeTab === 'pipeline' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Vue Pipeline Kanban
+            Vue Pipeline
           </button>
           <button
             onClick={() => setActiveTab('list')}
@@ -191,7 +250,15 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
               activeTab === 'list' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Vue Liste & Fiches Contacts
+            Liste Contacts
+          </button>
+          <button
+            onClick={() => setActiveTab('forms')}
+            className={`px-4 py-2 rounded-xl transition-all ${
+              activeTab === 'forms' ? 'bg-purple-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Capture de Leads
           </button>
         </div>
 
@@ -277,6 +344,118 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* TAB 3: FORMS VIEW */}
+      {activeTab === 'forms' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {forms.map((form) => (
+              <div key={form.id} className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 hover:border-purple-500/30 transition-all">
+                <div className="flex items-start justify-between">
+                  <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${form.active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400'}`}>
+                    {form.active ? 'Actif' : 'Inactif'}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-white">{form.title}</h4>
+                  <p className="text-[11px] text-slate-400 mt-1">{form.fields.length} champs • {form.submissionCount} soumissions</p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={() => handleCopyLink(form.id)}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-bold text-slate-300 hover:text-white transition-all"
+                  >
+                    {copiedFormId === form.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedFormId === form.id ? 'Copié' : 'Copier le lien'}</span>
+                  </button>
+
+                  <button className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">
+                    <Zap className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setShowFormBuilder(true)}
+              className="glass-panel p-6 rounded-3xl border border-dashed border-slate-800 flex flex-col items-center justify-center space-y-3 hover:bg-slate-900/40 transition-all group"
+            >
+              <div className="p-3 rounded-full bg-slate-900 border border-slate-800 group-hover:border-purple-500/50 transition-all">
+                <Plus className="w-6 h-6 text-slate-500 group-hover:text-purple-400" />
+              </div>
+              <span className="text-xs font-bold text-slate-500 group-hover:text-white">Nouveau Formulaire de Capture</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* FORM BUILDER MODAL */}
+      {showFormBuilder && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <form onSubmit={handleCreateForm} className="glass-panel w-full max-w-lg rounded-3xl p-6 lg:p-8 space-y-6 border border-purple-500/40">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-lg font-bold font-heading text-white flex items-center gap-2">
+                <Layout className="w-5 h-5 text-purple-400" />
+                <span>Configurateur de Formulaire Public</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowFormBuilder(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">Titre du Formulaire</label>
+                <input
+                  type="text"
+                  required
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="ex: Inscription Newsletter ou Demande de Devis"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div className="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/10 space-y-3">
+                <h4 className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Champs par défaut (Automatiques)</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-300">
+                    <span>Nom complet</span>
+                    <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">Requis</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-300">
+                    <span>E-mail</span>
+                    <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">Requis</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  L'IA de MAAT Studio analysera chaque soumission pour qualifier automatiquement le lead dans votre Sales OS.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold text-xs hover:brightness-110 flex items-center justify-center gap-2 shadow-lg"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Générer le Formulaire Public</span>
+            </button>
+          </form>
         </div>
       )}
 

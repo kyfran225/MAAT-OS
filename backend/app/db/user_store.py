@@ -29,14 +29,29 @@ class UserStore:
                     decision_logs TEXT NOT NULL,
                     simulations TEXT NOT NULL,
                     crm_contacts TEXT DEFAULT '[]',
+                    public_forms TEXT DEFAULT '[]',
+                    document_knowledge TEXT DEFAULT '[]',
+                    ingested_sources TEXT DEFAULT '[]',
+                    autopilot_settings TEXT DEFAULT '{}',
+                    autopilot_activity TEXT DEFAULT '[]',
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            # Check and add crm_contacts column if table existed without it
+            # Check and add columns if table existed without them
             cursor.execute("PRAGMA table_info(user_data)")
             columns = [column[1] for column in cursor.fetchall()]
             if "crm_contacts" not in columns:
                 cursor.execute("ALTER TABLE user_data ADD COLUMN crm_contacts TEXT DEFAULT '[]'")
+            if "public_forms" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN public_forms TEXT DEFAULT '[]'")
+            if "document_knowledge" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN document_knowledge TEXT DEFAULT '[]'")
+            if "ingested_sources" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN ingested_sources TEXT DEFAULT '[]'")
+            if "autopilot_settings" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN autopilot_settings TEXT DEFAULT '{}'")
+            if "autopilot_activity" not in columns:
+                cursor.execute("ALTER TABLE user_data ADD COLUMN autopilot_activity TEXT DEFAULT '[]'")
             conn.commit()
 
     def get_or_create_user_data(self, user_id: str) -> Dict[str, Any]:
@@ -55,6 +70,11 @@ class UserStore:
                     "decision_logs": json.loads(row["decision_logs"]),
                     "simulations": json.loads(row["simulations"]),
                     "crm_contacts": json.loads(row["crm_contacts"]) if "crm_contacts" in row.keys() and row["crm_contacts"] else [],
+                    "public_forms": json.loads(row["public_forms"]) if "public_forms" in row.keys() and row["public_forms"] else [],
+                    "document_knowledge": json.loads(row["document_knowledge"]) if "document_knowledge" in row.keys() and row["document_knowledge"] else [],
+                    "ingested_sources": json.loads(row["ingested_sources"]) if "ingested_sources" in row.keys() and row["ingested_sources"] else [],
+                    "autopilot_settings": json.loads(row["autopilot_settings"]) if "autopilot_settings" in row.keys() and row["autopilot_settings"] else {},
+                    "autopilot_activity": json.loads(row["autopilot_activity"]) if "autopilot_activity" in row.keys() and row["autopilot_activity"] else [],
                 }
 
             # Create initial default data for new user

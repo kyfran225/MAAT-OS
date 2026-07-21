@@ -20,6 +20,8 @@ import { ExportCenter } from './components/export/ExportCenter';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { DeepRAGChat } from './components/brain/DeepRAGChat';
 import { KnowledgeGraphExplorer } from './components/graph/KnowledgeGraphExplorer';
+import { ConnectorSettings } from './components/settings/ConnectorSettings';
+import { AutopilotSettings } from './components/settings/AutopilotSettings';
 
 import { BackendService } from './services/backendService';
 import { INITIAL_AGENTS, INITIAL_CRM_CONTACTS, DEMO_DATASET } from './data/mockData';
@@ -72,6 +74,7 @@ export const App: React.FC = () => {
   const [founderConfig, setFounderConfig] = useState<FounderBrainConfig>(buildDefaultFounder());
   const [companyConfig, setCompanyConfig] = useState<CompanyBrainConfig>(DEFAULT_GUEST_COMPANY);
   const [crmContacts, setCrmContacts] = useState<CRMContact[]>(INITIAL_CRM_CONTACTS);
+  const [isAutopilotEnabled, setIsAutopilotEnabled] = useState(false);
 
   // Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -130,6 +133,7 @@ export const App: React.FC = () => {
       }
       if (data.company_brain) setCompanyConfig(data.company_brain);
       if (data.crm_contacts) setCrmContacts(data.crm_contacts);
+      if (data.autopilot_settings) setIsAutopilotEnabled(data.autopilot_settings.enabled || false);
     } else if (currentUser.userId !== 'user-demo') {
       setSystemHealth(DEFAULT_GUEST_HEALTH);
       setMissions([]);
@@ -356,6 +360,7 @@ export const App: React.FC = () => {
           setCurrentView={setCurrentView}
           activeMissionsCount={activeMissionsCount}
           unresolvedDecisionsCount={decisionLogs.length}
+          isAutopilotEnabled={isAutopilotEnabled}
         />
 
         {/* Content View Area */}
@@ -473,6 +478,14 @@ export const App: React.FC = () => {
 
           {currentView === 'graph' && (
             <KnowledgeGraphExplorer />
+          )}
+
+          {currentView === 'settings' && (
+            <ConnectorSettings />
+          )}
+
+          {currentView === 'autopilot' && (
+            <AutopilotSettings onToggle={(enabled) => setIsAutopilotEnabled(enabled)} />
           )}
         </main>
       </div>
