@@ -1,4 +1,4 @@
-# MAAT Studio AI™ — Vision Stratégique & Architecture Système
+# MAAT Studio AI™ - Vision Stratégique & Architecture Système
 
 **Projet :** MAAT Studio AI  
 **Catégorie Technologique :** AI Company Operating System™ (AI Business OS)
@@ -32,12 +32,12 @@ Fondateur ➔ Mission Métier ➔ Moteur Cognitif (Analyse, Débat, Exécution p
 
 MAAT Studio AI s'inscrit dans un écosystème à deux piliers complémentaires :
 
-### 🌌 1. MAATFEED — *Human Intelligence Layer™*
+### 🌌 1. MAATFEED - *Human Intelligence Layer™*
 - **Role :** Réseau social et réseau d'intelligence humaine temps réel.
 - **Capte :** Les tendances culturelles, les conversations, les récits émergents, les comportements et les sentiments des utilisateurs.
 - **Cœur métier :** L'Humain et la Conversation.
 
-### 🧠 2. MAAT Studio AI — *Business Intelligence Layer™*
+### 🧠 2. MAAT Studio AI - *Business Intelligence Layer™*
 - **Rôle :** Système d'exploitation et cerveau opérationnel d'entreprise.
 - **Pilote :** Les objectifs, la stratégie, la mémoire d'entreprise, les équipes d'agents spécialisés et les opérations.
 - **Cœur métier :** L'Entreprise et la Décision.

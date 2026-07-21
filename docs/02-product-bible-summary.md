@@ -1,4 +1,4 @@
-# MAAT Studio AI™ — Product Bible : Structure, Taxonomie & Synthèse Optimisée
+# MAAT Studio AI™ - Product Bible : Structure, Taxonomie & Synthèse Optimisée
 
 **Projet :** MAAT Studio AI  
 **Document :** Master Product Bible Classification (Réorganisation V2)

@@ -205,7 +205,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
             <div className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-amber-400 shrink-0" />
               <h2 className="text-base sm:text-lg font-bold font-heading text-white leading-snug">
-                Passerelle MAATFEED — Human Intelligence Layer™
+                Passerelle MAATFEED - Human Intelligence Layer™
               </h2>
             </div>
             <p className="text-xs text-slate-400 leading-normal">

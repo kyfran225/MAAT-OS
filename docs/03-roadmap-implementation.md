@@ -1,4 +1,4 @@
-# MAAT Studio AI™ — Roadmap d'Implémentation & Architecture Technique
+# MAAT Studio AI™ - Roadmap d'Implémentation & Architecture Technique
 
 **Dernière révision :** 2026-07-20  
 **Projet :** MAAT Studio AI

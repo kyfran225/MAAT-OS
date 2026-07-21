@@ -15,7 +15,7 @@ from app.schemas.models import (
 from app.agents.board import AIBoardEngine
 
 app = FastAPI(
-    title="MAAT Studio AI™ — Backend Agent Core API",
+    title="MAAT Studio AI™ - Backend Agent Core API",
     version="2.4.0",
     description="API Moteur Cognitif & Conseil d'Administration IA pour MAAT Studio AI"
 )

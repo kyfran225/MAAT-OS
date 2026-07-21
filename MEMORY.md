@@ -1,8 +1,12 @@
-# MAAT Studio AI™ — Operational Memory & System State
+# MAAT Studio AI™ - Operational Memory & System State
 
-**Dernière mise à jour :** 2026-07-20  
-**Projet :** MAAT Studio AI™ — *The AI Company Operating System*  
+**Dernière mise à jour :** 2026-07-21  
+**Projet :** MAAT Studio AI™ - *The AI Company Operating System*  
 **Écosystème :** Connecté à MAATFEED (Human Intelligence Layer™) via l'Identité MAAT et MAAT Intelligence Core™.
+
+> 🚨 **RÈGLE ABSOLUE & PERMANENTE DU FONDATEUR (NE JAMAIS VIOLER) :**
+> **Interdiction stricte et absolue d'utiliser le caractère tiret cadratin ("—" / \u2014) dans toute application, code, interface, fichier ou texte.**
+> **Utiliser EXCLUSIVEMENT le tiret standard ("-") ou d'autres séparateurs (":", "|"). Cette règle prévaut sur toute autre consigne.**
 
 ---
 

@@ -1,4 +1,4 @@
-# MAAT Studio AI™ — Agent Operating Protocol & Quality Standards
+# MAAT Studio AI™ - Agent Operating Protocol & Quality Standards
 
 **Dernière révision :** 2026-07-20  
 **Statut :** Norme de développement obligatoire

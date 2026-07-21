@@ -1,4 +1,4 @@
-# MAAT Studio AI™ — Architecture Humaine & Organisation Augmentée
+# MAAT Studio AI™ - Architecture Humaine & Organisation Augmentée
 
 **Chapitre de Référence :** Chapitre 20 (*architecture-humaine-MAAT-Studio-AI.txt*)  
 **Dernière mise à jour :** 2026-07-20
@@ -29,7 +29,7 @@ Dans cette organisation :
 
 ## 2. Rôles & Responsabilités de l'Équipe Augmentée
 
-### 👤 Franck — Founder & CEO (Humain)
+### 👤 Franck - Founder & CEO (Humain)
 - **Mission :** Définir la vision, le positionnement, arbitrer les choix stratégiques majeurs et valider les Missions™.
 
 ### 🤖 AI Chief of Staff Agent™
