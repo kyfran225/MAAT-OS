@@ -88,9 +88,9 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         {/* Health Score Card */}
         <div className="glass-panel rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 leading-snug">
+            <h3 className="font-heading font-bold text-sm xl:text-base text-white flex items-center gap-1.5 whitespace-nowrap shrink-0">
               <TrendingUp className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Score de Santé Système</span>
+              <span>Score Santé Système</span>
             </h3>
             <span className="text-xs font-mono-code font-bold text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap shrink-0">
               {systemHealth.overallHealth}% Global
@@ -125,7 +125,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         {/* C-Suite Board Overview */}
         <div className="glass-panel rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 leading-snug">
+            <h3 className="font-heading font-bold text-xs sm:text-sm xl:text-base text-white flex items-center gap-1.5 whitespace-nowrap shrink-0">
               <Users className="w-4 h-4 text-amber-400 shrink-0" />
               <span>Conseil d'Administration IA</span>
             </h3>
@@ -142,20 +142,20 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
               <div 
                 key={agent.id} 
                 onClick={() => setCurrentView('agents')}
-                className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 cursor-pointer flex items-center justify-between transition-all"
+                className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 cursor-pointer flex items-center justify-between gap-2 transition-all"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-lg">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center text-lg shrink-0">
                     {agent.avatar}
                   </div>
-                  <div>
-                    <div className="text-xs font-bold text-white">{agent.name}</div>
-                    <div className="text-[10px] text-slate-400">{agent.role}</div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-white truncate">{agent.name}</div>
+                    <div className="text-[10px] text-slate-400 truncate">{agent.role}</div>
                   </div>
                 </div>
                 
-                <div className="text-right">
-                  <span className="text-[10px] font-mono-code font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] font-mono-code font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0 inline-block">
                     {agent.confidence}% Confiance
                   </span>
                 </div>
@@ -168,7 +168,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
         <div className="glass-panel rounded-2xl p-6 space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-2 mb-3">
-              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 leading-snug">
+              <h3 className="font-heading font-bold text-sm xl:text-base text-white flex items-center gap-1.5 whitespace-nowrap shrink-0">
                 <Cpu className="w-4 h-4 text-cyan-400 shrink-0" />
                 <span>Mode Simulation™</span>
               </h3>
