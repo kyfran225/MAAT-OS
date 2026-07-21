@@ -22,6 +22,8 @@ import { BrainConfigurator } from './components/brain/BrainConfigurator';
 import { SimulationView } from './components/simulation/SimulationView';
 import { JournalBoard } from './components/logs/JournalBoard';
 
+import { BackendService } from './services/backendService';
+
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('dashboard');
 
@@ -38,7 +40,7 @@ export const App: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Actions
-  const handleCreateMission = (newMissionData: {
+  const handleCreateMission = async (newMissionData: {
     title: string;
     category: any;
     target: string;
@@ -47,7 +49,10 @@ export const App: React.FC = () => {
     objective: string;
     constraints: string[];
   }) => {
-    const createdMission: Mission = {
+    // Attempt live creation via Python FastAPI Backend Engine
+    const backendMission = await BackendService.getInstance().createMission(newMissionData);
+
+    const createdMission: Mission = backendMission || {
       id: `mission-${Date.now()}`,
       title: newMissionData.title,
       category: newMissionData.category,
@@ -83,8 +88,8 @@ export const App: React.FC = () => {
       agentId: 'ceo-agent',
       agentName: 'CEO Agent™',
       category: newMissionData.category,
-      confidenceScore: 94,
-      reasoning: `Nouvelle Mission™ générée selon la vision du Founder Brain (${founderConfig.founderName}).`,
+      confidenceScore: createdMission.confidenceScore || 94,
+      reasoning: `Nouvelle Mission™ générée par le Moteur Cognitif (Founder Brain: ${founderConfig.founderName}).`,
       status: 'executing',
       impacts: [`Budget alloué : $${newMissionData.budget}`, `Délai : ${newMissionData.timeline}`]
     };
@@ -115,8 +120,14 @@ export const App: React.FC = () => {
     }));
   };
 
-  const handleRunNewSimulation = (title: string, variable: string, budgetChange: string) => {
-    const newScen: SimulationScenario = {
+  const handleRunNewSimulation = async (title: string, variable: string, budgetChange: string) => {
+    const backendSim = await BackendService.getInstance().runSimulation({
+      title,
+      variable,
+      changeValue: budgetChange
+    });
+
+    const newScen: SimulationScenario = backendSim || {
       id: `sim-${Date.now()}`,
       title,
       description: `Simulation personnalisée déclenchée le ${new Date().toLocaleDateString()}`,
