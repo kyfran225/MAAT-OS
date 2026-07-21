@@ -50,6 +50,25 @@ def read_root():
         "version": "2.5.0"
     }
 
+@app.post("/api/auth/google/callback")
+async def google_auth_callback(request: dict):
+    """
+    Exchange authorization code for access and refresh tokens.
+    In a real implementation, this would use google-auth-oauthlib.
+    """
+    code = request.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Code missing")
+
+    # Simulation of token exchange
+    print(f"Received Google Auth Code: {code}")
+
+    return {
+        "status": "success",
+        "message": "Tokens exchanged and stored successfully",
+        "scopes": ["drive.readonly", "gmail.readonly"]
+    }
+
 @app.get("/api/v1/user-data")
 def get_all_user_data(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
     uid = get_user_id(x_user_id, user_id)
