@@ -13,7 +13,7 @@ export const knowledgeGraphService = {
     };
   },
 
-  addNodeFromSource: (source: { id: string; name: string; type: string; extractedBrain: string; extractedInsights: string[] }) => {
+  addNodeFromSource: (source: { id: string; name: string; type: string; extractedBrain: string; extractedInsights?: string[] }) => {
     const newNode: GraphNode = {
       id: `node-${source.id}`,
       label: source.name,
@@ -26,7 +26,7 @@ export const knowledgeGraphService = {
         description: `Document ingéré via le Smart Ingestion Center. Analyse sémantique rattachée au ${source.extractedBrain}.`,
         impactScore: 85 + Math.floor(Math.random() * 10),
         lastUpdated: 'À l\'instant',
-        keyAttributes: source.extractedInsights
+        keyAttributes: source.extractedInsights || []
       }
     };
 

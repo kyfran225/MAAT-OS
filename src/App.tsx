@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppView, Mission, DecisionLog, SimulationScenario, FounderBrainConfig, CompanyBrainConfig, SystemHealth, Agent, CRMContact, CRMContactStatus, FinanceStats, MarketSignal, Competitor, HRData } from './types';
+import { AppView, Mission, DecisionLog, SimulationScenario, FounderBrainConfig, CompanyBrainConfig, SystemHealth, Agent, CRMContact, CRMContactStatus, FinanceStats, HRData } from './types';
 import { MAATAuthService, isRealName } from './services/maatAuthService';
 
 import { Header } from './components/layout/Header';
@@ -540,7 +540,7 @@ export const App: React.FC = () => {
                 });
                 if (res.ok) loadUserData();
               }}
-              onScreenCandidates={(jobId) => {
+              onScreenCandidates={(_jobId) => {
                 // Simulate screening
                 setHrData({
                   ...hrData,

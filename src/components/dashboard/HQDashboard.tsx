@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SystemHealth, Mission, DecisionLog, Agent, AppView } from '../../types';
-import { Target, Users, Cpu, FileText, CheckCircle2, AlertTriangle, ArrowRight, ShieldCheck, Flame, PlusCircle, TrendingUp, Globe, Sparkles, Database, Wallet } from 'lucide-react';
-import { MAATFEEDIntelligenceService } from '../../services/maatfeedIntelligenceService';
+import { Target, Users, Cpu, FileText, CheckCircle2, AlertTriangle, ArrowRight, ShieldCheck, Flame, PlusCircle, TrendingUp, Globe, Sparkles, Database, Wallet, RefreshCw } from 'lucide-react';
 import { MAATAuthService } from '../../services/maatAuthService';
 import { knowledgeGraphService } from '../../services/knowledgeGraphService';
 import { BackendService } from '../../services/backendService';
@@ -68,8 +67,6 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
     ? currentUser.displayName
     : 'Dirigeant';
 
-  const liveSignalsCount = liveSignals.length;
-
   return (
     <div className="space-y-6 pb-12">
       {/* CEO Morning Brief Panel */}
@@ -104,7 +101,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
                 </div>
                 <div className="flex items-center gap-2 text-cyan-400">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Signaux MAATFEED : <strong>{liveSignalsCount} Nouveaux</strong></span>
+                  <span>Santé Globale OS : <strong>{systemHealth ? systemHealth.overallHealth : 94}%</strong></span>
                 </div>
               </div>
             </div>
@@ -303,7 +300,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
           </div>
 
           <button
-            onClick={() => setCurrentView('brain')}
+            onClick={() => setCurrentView('brains')}
             className="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition-all flex items-center justify-center gap-2"
           >
             <span>Explorer le Multi-Brain</span>

@@ -3,7 +3,6 @@ import {
   Globe,
   Target,
   AlertCircle,
-  TrendingUp,
   ExternalLink,
   Plus,
   ShieldAlert,
@@ -11,8 +10,7 @@ import {
   ChevronRight,
   Search
 } from 'lucide-react';
-import { MarketSignal, Competitor, CompanyBrainConfig } from '../../types';
-import { BackendService } from '../../services/backendService';
+import { MarketSignal, CompanyBrainConfig } from '../../types';
 
 interface MarketBrainModuleProps {
   companyConfig: CompanyBrainConfig;

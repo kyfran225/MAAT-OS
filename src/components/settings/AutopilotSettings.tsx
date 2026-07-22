@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Zap,
   ShieldCheck,
-  Settings,
   TrendingUp,
   AlertCircle,
   CheckCircle2,
@@ -11,7 +10,6 @@ import {
   Unlock,
   Coins
 } from 'lucide-react';
-import { BackendService } from '../../services/backendService';
 
 interface AutopilotSettingsProps {
   onToggle: (enabled: boolean) => void;
@@ -177,7 +175,7 @@ export const AutopilotSettings: React.FC<AutopilotSettingsProps> = ({ onToggle }
 
             <div className="pt-4 border-t border-slate-800">
               <button
-                onClick={handleSave}
+                onClick={() => handleSave()}
                 disabled={isSaving}
                 className="w-full py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-xs hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
               >

@@ -42,6 +42,8 @@ export interface UserAllData {
   simulations: SimulationScenario[];
   crm_contacts?: CRMContact[];
   finance_stats?: any;
+  autopilot_settings?: { enabled: boolean; min_confidence: number; max_budget_xof: number };
+  hr_data?: any;
 }
 
 export class BackendService {

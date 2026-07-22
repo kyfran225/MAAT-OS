@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Agent } from '../../types';
-import { Users, MessageSquare, Send, Cpu, Sparkles, Target, ArrowRight } from 'lucide-react';
+import { Users, MessageSquare, Send, Cpu, Sparkles, ArrowRight } from 'lucide-react';
 import { BackendService } from '../../services/backendService';
 import { knowledgeGraphService } from '../../services/knowledgeGraphService';
 

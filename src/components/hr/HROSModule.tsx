@@ -11,7 +11,7 @@ import {
   UserCheck,
   Briefcase
 } from 'lucide-react';
-import { HRData, JobPosting, Candidate, FounderBrainConfig } from '../../types';
+import { HRData, FounderBrainConfig } from '../../types';
 
 interface HROSModuleProps {
   hrData: HRData;

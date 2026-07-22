@@ -121,6 +121,8 @@ export const ConnectorSettings: React.FC = () => {
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1">Identifiant de numéro de téléphone (Phone ID)</label>
                 <input
                   type="text"
+                  value={whatsappKey}
+                  onChange={(e) => setWhatsappKey(e.target.value)}
                   placeholder="ID Meta Business..."
                   className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:border-emerald-500 outline-none"
                 />
@@ -143,10 +145,20 @@ export const ConnectorSettings: React.FC = () => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1">Clé API SendGrid</label>
+              <input
+                type="password"
+                value={sendgridKey}
+                onChange={(e) => setSendgridKey(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-500 outline-none"
+              />
+            </div>
+
             <div className="p-4 rounded-2xl bg-slate-950 border border-slate-900 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-5 h-5 text-cyan-400" />
-                <span className="text-xs text-slate-300 font-mono-code">Status: Mode Simulation Actif</span>
+                <span className="text-xs text-slate-300 font-mono-code">Status: Mode Simulation Actif {syncStatus === 'success' ? '(Synchro Réussie)' : ''}</span>
               </div>
               <button className="text-[10px] font-bold text-cyan-400 uppercase hover:underline">Activer Real-Mode</button>
             </div>

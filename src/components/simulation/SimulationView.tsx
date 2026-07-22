@@ -9,8 +9,6 @@ import {
   Bot, 
   Sparkles,
   Save,
-  BarChart3,
-  Calendar,
   LineChart
 } from 'lucide-react';
 
@@ -85,8 +83,8 @@ export const SimulationView: React.FC<SimulationViewProps> = ({
       confidenceScore: confidenceScore,
       recommendation: `Le CFO Agent recommande ce scénario (ROI ${calculatedROI}x) avec un investissement annuel de $${estimatedAnnualCost.toLocaleString()} pour un profit net estimé à $${projectedNetProfit.toLocaleString()}.`,
       projections: {
-        revenueIncrease: `+$${projectedMonthlyRevenue.toLocaleString()} / mois`,
-        customerAcquisition: `+${estimatedNewCustomers} clients / mois`,
+        revenueIncrease: `+$${metrics.mrr.toLocaleString()} / mois`,
+        customerAcquisition: `+${metrics.customers} clients / mois`,
         timeline: '30 à 90 Jours'
       }
     };

@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  MessageSquare,
   Send,
   FileText,
-  Search,
   Sparkles,
   Brain,
   Database,
-  ArrowRight,
   ShieldCheck,
   Bot
 } from 'lucide-react';

@@ -12,7 +12,6 @@ import {
   Mail, 
   Phone, 
   X,
-  Target,
   FileText,
   Copy,
   Check,
@@ -224,11 +223,11 @@ export const SalesOSModule: React.FC<SalesOSModuleProps> = ({
 
         <div className="glass-panel p-5 rounded-2xl space-y-1">
           <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
-            <span>Formulaires Actifs</span>
+            <span>Taux de Conversion</span>
             <FileText className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-emerald-400 font-mono-code">{forms.filter(f => f.active).length}</div>
-          <div className="text-[11px] text-emerald-400 font-mono-code">Prêt pour capture web</div>
+          <div className="text-2xl font-bold text-emerald-400 font-mono-code">{conversionRate}%</div>
+          <div className="text-[11px] text-emerald-400 font-mono-code">{forms.filter(f => f.active).length} formulaires actifs</div>
         </div>
       </div>
 

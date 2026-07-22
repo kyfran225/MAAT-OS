@@ -14,10 +14,10 @@ import {
   Rocket,
   ShieldCheck,
   Bot,
-  ArrowRight,
   Palette,
   Zap,
-  Layers
+  Layers,
+  Layout
 } from 'lucide-react';
 
 interface OnboardingWizardProps {

@@ -14,6 +14,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { BackendService } from '../../services/backendService';
+import { knowledgeGraphService } from '../../services/knowledgeGraphService';
 
 interface IngestedSource {
   id: string;
@@ -559,7 +560,7 @@ export const SmartIngestionCenter: React.FC = () => {
                     <Bot className="w-3.5 h-3.5 text-purple-400" />
                     <span>Enseignements extraits par l'IA :</span>
                   </div>
-                  {src.extractedInsights.map((insight, idx) => (
+                  {src.extractedInsights?.map((insight, idx) => (
                     <div key={idx} className="text-[11px] text-slate-400 flex items-center gap-2 pl-2">
                       <span className="text-amber-400 font-bold">•</span>
                       <span>{insight}</span>
