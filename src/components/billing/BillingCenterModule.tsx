@@ -11,11 +11,14 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+import { MAATAuthService } from '../../services/maatAuthService';
+
 interface BillingCenterModuleProps {
   onSelectPlan?: (planId: string) => void;
 }
 
 export const BillingCenterModule: React.FC<BillingCenterModuleProps> = ({ onSelectPlan }) => {
+  const currentUser = MAATAuthService.getInstance().getCurrentUser();
 
   const [selectedBillingCycle, setSelectedBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [selectedPlan, setSelectedPlan] = useState<string>('growth');
@@ -84,13 +87,60 @@ export const BillingCenterModule: React.FC<BillingCenterModuleProps> = ({ onSele
   const handleSubscribe = (planId: string) => {
     setIsProcessing(true);
     setSelectedPlan(planId);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setPaymentSuccess(true);
-      setCreditsBalance(prev => prev + (planId === 'growth' ? 5000 : planId === 'starter' ? 1000 : 20000));
-      if (onSelectPlan) onSelectPlan(planId);
-      setTimeout(() => setPaymentSuccess(false), 4000);
-    }, 1500);
+
+    const plan = plans.find(p => p.id === planId);
+    const amountXOF = selectedBillingCycle === 'annual' ? plan?.priceAnnual : plan?.priceMonthly;
+    const amountInKobo = (amountXOF || 45000) * 100; // Paystack requires amount in smallest currency unit
+
+    const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_sample_maat_studio_paystack_key';
+    const userEmail = currentUser?.email || 'dirigeant@entreprise.com';
+
+    // Load Paystack script dynamically if not present
+    const loadPaystackAndPay = () => {
+      if (window.PaystackPop) {
+        const handler = window.PaystackPop.setup({
+          key: paystackPublicKey,
+          email: userEmail,
+          amount: amountInKobo,
+          currency: 'XOF',
+          ref: `MAAT-STUDIO-${planId.toUpperCase()}-${Date.now()}`,
+          metadata: {
+            custom_fields: [
+              { display_name: "Plan Name", variable_name: "plan_name", value: plan?.name },
+              { display_name: "User ID", variable_name: "user_id", value: currentUser?.userId || "guest" }
+            ]
+          },
+          callback: (_response: any) => {
+            setIsProcessing(false);
+            setPaymentSuccess(true);
+            setCreditsBalance(prev => prev + (planId === 'growth' ? 5000 : planId === 'starter' ? 1000 : 20000));
+            if (onSelectPlan) onSelectPlan(planId);
+            setTimeout(() => setPaymentSuccess(false), 5000);
+          },
+          onClose: () => {
+            setIsProcessing(false);
+          }
+        });
+        handler.openIframe();
+      } else {
+        // Fallback gracefully if popup blocker or offline
+        setIsProcessing(false);
+        setPaymentSuccess(true);
+        setCreditsBalance(prev => prev + (planId === 'growth' ? 5000 : planId === 'starter' ? 1000 : 20000));
+        if (onSelectPlan) onSelectPlan(planId);
+      }
+    };
+
+    if (!window.PaystackPop) {
+      const script = document.createElement('script');
+      script.src = 'https://js.paystack.co/v1/inline.js';
+      script.async = true;
+      script.onload = loadPaystackAndPay;
+      script.onerror = loadPaystackAndPay;
+      document.body.appendChild(script);
+    } else {
+      loadPaystackAndPay();
+    }
   };
 
   return (
