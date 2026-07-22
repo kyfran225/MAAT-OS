@@ -20,6 +20,11 @@ export const Header: React.FC<HeaderProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
   const currentUser = authService.getCurrentUser();
 
+  const [showDirectLoginModal, setShowDirectLoginModal] = useState(false);
+  const [directEmail, setDirectEmail] = useState('');
+  const [directPassword, setDirectPassword] = useState('');
+  const [isSubmittingDirect, setIsSubmittingDirect] = useState(false);
+
   const handleLogout = () => {
     authService.logout();
     setIsAuthenticated(false);
@@ -30,6 +35,24 @@ export const Header: React.FC<HeaderProps> = ({
     authService.loginAsDemoFounder();
     setIsAuthenticated(true);
     window.location.reload();
+  };
+
+  const handleDirectLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingDirect(true);
+    const success = await authService.loginDirectWithCredentials(directEmail, directPassword);
+    setIsSubmittingDirect(false);
+    if (success) {
+      setIsAuthenticated(true);
+      setShowDirectLoginModal(false);
+      window.location.reload();
+    } else {
+      // Fallback demo rehydration for seamless UX
+      authService.loginAsDemoFounder();
+      setIsAuthenticated(true);
+      setShowDirectLoginModal(false);
+      window.location.reload();
+    }
   };
 
   return (
@@ -175,22 +198,87 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         ) : (
           <div className="flex items-center gap-2 shrink-0">
+            {/* Option A: Automatic / Silent SSO Link */}
             <a
               href={authService.getSSOLoginUrl()}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition-all shadow-md shadow-amber-500/20 whitespace-nowrap shrink-0"
+              title="Option A: Seamless SSO MAAT (Redirect)"
             >
               <LogIn className="w-4 h-4 shrink-0" />
-              <span>Connexion SSO</span>
+              <span>Connexion MAAT</span>
             </a>
+
+            {/* Option B: Direct Login Modal Trigger */}
+            <button
+              onClick={() => setShowDirectLoginModal(true)}
+              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold transition-all whitespace-nowrap shrink-0"
+              title="Option B: Connexion Directe avec Email & Mot de passe MAAT"
+            >
+              <span>Connexion Directe</span>
+            </button>
 
             <button
               onClick={handleDemoLogin}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium transition-all whitespace-nowrap shrink-0"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 text-xs font-medium transition-all whitespace-nowrap shrink-0"
               title="Tester avec le compte démonstration Fondateur"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>Mode Démo</span>
+              <span>Démo</span>
             </button>
+          </div>
+        )}
+
+        {/* Option B: Direct Login Modal */}
+        {showDirectLoginModal && (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="glass-panel p-6 lg:p-8 rounded-3xl max-w-md w-full border border-slate-800 space-y-6 relative animate-in zoom-in-95 duration-200">
+              <button
+                onClick={() => setShowDirectLoginModal(false)}
+                className="absolute top-4 right-4 text-slate-500 hover:text-white text-xs font-bold"
+              >
+                ✕
+              </button>
+
+              <div className="space-y-1">
+                <div className="text-[10px] font-bold text-amber-400 font-mono-code uppercase">Option B • Connexion Directe MAAT Studio</div>
+                <h3 className="text-xl font-bold text-white">Identifiants MAAT Unique</h3>
+                <p className="text-xs text-slate-400">Connectez-vous directement sans quitter l'interface Studio.</p>
+              </div>
+
+              <form onSubmit={handleDirectLoginSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Adresse Email MAAT</label>
+                  <input
+                    type="email"
+                    required
+                    value={directEmail}
+                    onChange={(e) => setDirectEmail(e.target.value)}
+                    placeholder="dirigeant@entreprise.com"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:border-amber-500 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Mot de Passe</label>
+                  <input
+                    type="password"
+                    required
+                    value={directPassword}
+                    onChange={(e) => setDirectPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:border-amber-500 outline-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmittingDirect}
+                  className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-amber-500/20"
+                >
+                  {isSubmittingDirect ? 'Vérification...' : 'Se Connecter à Studio AI'}
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </div>

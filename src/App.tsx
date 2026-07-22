@@ -25,6 +25,7 @@ import { AutopilotSettings } from './components/settings/AutopilotSettings';
 import { FinanceOSModule } from './components/finance/FinanceOSModule';
 import { MarketBrainModule } from './components/market/MarketBrainModule';
 import { HROSModule } from './components/hr/HROSModule';
+import { BillingCenterModule } from './components/billing/BillingCenterModule';
 
 import { BackendService } from './services/backendService';
 import { INITIAL_AGENTS, INITIAL_CRM_CONTACTS, DEMO_DATASET } from './data/mockData';
@@ -511,6 +512,10 @@ export const App: React.FC = () => {
 
           {currentView === 'finance_os' && (
             <FinanceOSModule stats={financeStats} />
+          )}
+
+          {currentView === 'billing' && (
+            <BillingCenterModule onSelectPlan={() => setCurrentView('dashboard')} />
           )}
 
           {currentView === 'market_brain' && (

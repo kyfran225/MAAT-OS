@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppView } from '../../types';
-import { LayoutDashboard, Target, Users, Brain, Cpu, FileText, Globe, Zap, Activity, FileDown, MessageSquare, Network, Sparkles, Settings, DollarSign, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Target, Users, Brain, Cpu, FileText, Globe, Zap, Activity, FileDown, MessageSquare, Network, Sparkles, Settings, DollarSign, UserPlus, CreditCard } from 'lucide-react';
 
 interface SidebarProps {
   currentView: AppView;
@@ -33,7 +33,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'onboarding', label: 'Onboarding', icon: Sparkles },
     { id: 'settings', label: 'Paramètres API', icon: Settings },
     { id: 'autopilot', label: 'Mode Autopilote', icon: Zap, badge: isAutopilotEnabled ? 'AUTO' : undefined },
-    { id: 'finance_os', label: 'Finance OS', icon: DollarSign, badge: 'ROI' },
+    {id: 'finance_os', label: 'Finance OS', icon: DollarSign, badge: 'ROI' },
+    { id: 'billing', label: 'Abonnements & Crédits', icon: CreditCard, badge: 'PLANS' },
     { id: 'market_brain', label: 'Market Brain', icon: Globe, badge: 'SCAN' },
     { id: 'hr_os', label: 'RH & Onboarding', icon: UserPlus, badge: 'PEOPLE' },
   ];

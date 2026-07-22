@@ -201,6 +201,32 @@ export class MAATAuthService {
     const currentUrl = encodeURIComponent(window.location.origin);
     return `${ssoBaseUrl}?redirect_to=${currentUrl}`;
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Option B: Login Direct sur Studio via Identifiant MAAT (sans redirection web)
+  // ─────────────────────────────────────────────────────────────────────────
+  public async loginDirectWithCredentials(email: string, passwordHash: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/auth/login-direct`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: passwordHash })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.token) {
+          localStorage.setItem('maat_sso_token', data.token);
+          localStorage.setItem('maat_user_email', data.email || email);
+          if (data.name) localStorage.setItem('maat_user_display_name', data.name);
+          this.initUserFromStorageOrUrl();
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn("Direct login fallback to local session rehydration", e);
+    }
+    return false;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

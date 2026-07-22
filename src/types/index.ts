@@ -1,4 +1,4 @@
-export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal' | 'sales_os' | 'actions' | 'audit' | 'export_center' | 'rag_chat' | 'onboarding' | 'graph' | 'settings' | 'autopilot' | 'finance_os' | 'market_brain' | 'hr_os';
+export type AppView = 'dashboard' | 'missions' | 'agents' | 'brains' | 'simulation' | 'journal' | 'sales_os' | 'actions' | 'audit' | 'export_center' | 'rag_chat' | 'onboarding' | 'graph' | 'settings' | 'autopilot' | 'finance_os' | 'market_brain' | 'hr_os' | 'billing';
 
 export type MissionCategory = 'marketing' | 'sales' | 'product' | 'finance' | 'hr' | 'strategy';
 export type MissionStatus = 'active' | 'debating' | 'simulating' | 'paused' | 'completed';
