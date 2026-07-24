@@ -1,6 +1,6 @@
-# MAAT Studio AI™ - Vision Stratégique & Architecture Système
+# MAAT OS™ - Vision Stratégique & Architecture Système
 
-**Projet :** MAAT Studio AI  
+**Projet :** MAAT OS  
 **Catégorie Technologique :** AI Company Operating System™ (AI Business OS)
 
 ---
@@ -9,7 +9,7 @@
 
 Les logiciels traditionnels (SaaS) sont conçus autour de **fonctionnalités isolées** : créer un post, générer une image, éditer une vidéo, envoyer des e-mails. L'humain reste le chef d'orchestre qui assemble manuellement les pièces du puzzle.
 
-**MAAT Studio AI supprime ce découpage par fonctionnalités pour introduire le concept de Missions™.**
+**MAAT OS supprime ce découpage par fonctionnalités pour introduire le concept de Missions™.**
 
 Une entreprise ne cherche pas à exécuter des tâches techniques répétitives ; elle cherche à atteindre des **résultats stratégiques** :
 - *"Lancer un nouveau produit sur le marché"*
@@ -22,22 +22,22 @@ Une entreprise ne cherche pas à exécuter des tâches techniques répétitives 
 Logiciels SaaS Classiques:
 Utilisateur ➔ Outil A (Texte) ➔ Outil B (Visuel) ➔ Outil C (Publication) ➔ Analyse Manuelle
 
-MAAT Studio AI:
+MAAT OS:
 Fondateur ➔ Mission Métier ➔ Moteur Cognitif (Analyse, Débat, Exécution par Agents) ➔ Dashboard de Résultats
 ```
 
 ---
 
-## 2. L'Écosystème Duumvirat : MAATFEED + MAAT Studio AI
+## 2. L'Écosystème Duumvirat : MAATFEED + MAAT OS
 
-MAAT Studio AI s'inscrit dans un écosystème à deux piliers complémentaires :
+MAAT OS s'inscrit dans un écosystème à deux piliers complémentaires :
 
 ### 🌌 1. MAATFEED - *Human Intelligence Layer™*
 - **Role :** Réseau social et réseau d'intelligence humaine temps réel.
 - **Capte :** Les tendances culturelles, les conversations, les récits émergents, les comportements et les sentiments des utilisateurs.
 - **Cœur métier :** L'Humain et la Conversation.
 
-### 🧠 2. MAAT Studio AI - *Business Intelligence Layer™*
+### 🧠 2. MAAT OS - *Business Intelligence Layer™*
 - **Rôle :** Système d'exploitation et cerveau opérationnel d'entreprise.
 - **Pilote :** Les objectifs, la stratégie, la mémoire d'entreprise, les équipes d'agents spécialisés et les opérations.
 - **Cœur métier :** L'Entreprise et la Décision.
@@ -54,7 +54,7 @@ MAAT Studio AI s'inscrit dans un écosystème à deux piliers complémentaires :
            (Passerelle d'Intelligence)
                         │
                         ▼
-                  MAAT Studio AI
+                     MAAT OS
           (Business Intelligence Layer™)
                         │
                         ▼
@@ -65,7 +65,7 @@ MAAT Studio AI s'inscrit dans un écosystème à deux piliers complémentaires :
 
 ## 3. L'Architecture Cognitives Multi-Cerveaux (*Multi-Brain System™*)
 
-Le cerveau d'entreprise (*Business Brain™*) de MAAT Studio AI se décompose en sous-cerveaux interconnectés :
+Le cerveau d'entreprise (*Business Brain™*) de MAAT OS se décompose en sous-cerveaux interconnectés :
 
 1. **Founder Brain™ (Digital Twin du Dirigeant) :**
    - Modélise le style de prise de décision, les valeurs, l'appétence au risque, le ton et les priorités du fondateur.
@@ -102,6 +102,6 @@ L'entreprise numérique comprend plusieurs couches d'agents spécialisés qui co
 
 ## 5. Modèle d'Architecture Technique
 
-- **Frontend (Web App Studio) :** Next.js / React / TypeScript, Design System sur-mesure ultra-premium (animations micro-interactives, dark mode, tableaux de bord de simulation).
+- **Frontend (Web App MAAT OS) :** Next.js / React / TypeScript, Design System sur-mesure ultra-premium (animations micro-interactives, dark mode, tableaux de bord de simulation).
 - **Service d'Orchestration des Agents :** Moteur de workflows cognitifs distribués (Python / FastAPI & Node).
 - **Stockage & Graphe Cognitif :** PostgreSQL (Données transactionnelles), Vector DB (Recherche sémantique & mémoire long terme), Graph DB (Knowledge Graph d'entreprise).

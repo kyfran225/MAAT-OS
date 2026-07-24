@@ -1,7 +1,7 @@
-# MAAT Studio AI™ - Operational Memory & System State
+# MAAT OS™ - Operational Memory & System State
 
-**Dernière mise à jour :** 2026-07-21  
-**Projet :** MAAT Studio AI™ - *The AI Company Operating System*  
+**Dernière mise à jour :** 2026-07-24  
+**Projet :** MAAT OS™ - *The AI Company Operating System*  
 **Écosystème :** Connecté à MAATFEED (Human Intelligence Layer™) via l'Identité MAAT et MAAT Intelligence Core™.
 
 > 🚨 **RÈGLE ABSOLUE & PERMANENTE DU FONDATEUR (NE JAMAIS VIOLER) :**
@@ -12,7 +12,7 @@
 
 ## 1. Vision & Positionnement Produit
 
-MAAT Studio AI n'est pas un simple générateur de contenu ni un couteau suisse de fonctionnalités marketing.  
+MAAT OS n'est pas un simple générateur de contenu ni un couteau suisse de fonctionnalités marketing.  
 C'est le **premier système d'exploitation pour entreprises augmenté par l'IA** (*AI Company Operating System™*).
 
 - **Unité fondamentale :** La **Mission™** (Objectif métier global) et non la tâche / fonctionnalité.
@@ -51,6 +51,7 @@ Issu et élevé depuis le protocole opérationnel de MAATFEED :
 - [`docs/02-product-bible-summary.md`](file:///C:/Users/Franck/web-apps/MAAT-STUDIO-IA/docs/02-product-bible-summary.md) : Synthèse structurée et taxonomie des 110 chapitres de la Product Bible.
 - [`docs/03-roadmap-implementation.md`](file:///C:/Users/Franck/web-apps/MAAT-STUDIO-IA/docs/03-roadmap-implementation.md) : Feuillets de déploiement et étapes d'implémentation.
 - [`docs/04-architecture-humaine-equipe-ia.md`](file:///C:/Users/Franck/web-apps/MAAT-STUDIO-IA/docs/04-architecture-humaine-equipe-ia.md) : Organisation Augmentée & Rôles de l'équipe d'agents IA (Chapitre 20).
+
 
 ---
 

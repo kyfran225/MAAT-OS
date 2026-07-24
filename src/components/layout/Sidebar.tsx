@@ -106,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Footer Info */}
       <div className="pt-4 border-t border-slate-800/80 text-center text-[11px] text-slate-500 space-y-1">
-        <p className="font-mono-code font-semibold">MAAT STUDIO AI™ v2.4</p>
+        <p className="font-mono-code font-semibold">MAAT OS™ v2.4</p>
         <p className="text-[10px]">Zero UI Morte • Logic-First</p>
       </div>
     </aside>

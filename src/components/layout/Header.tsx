@@ -81,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-heading text-base sm:text-lg font-extrabold tracking-tight text-white whitespace-nowrap">
-                MAAT STUDIO <span className="text-amber-500">AI</span>
+                MAAT <span className="text-amber-500">OS</span>
               </span>
               <span className="text-[10px] font-mono-code font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 hidden sm:inline-block">
                 OS V2
@@ -240,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               <div className="space-y-1">
-                <div className="text-[10px] font-bold text-amber-400 font-mono-code uppercase">Option B • Connexion Directe MAAT Studio</div>
+                <div className="text-[10px] font-bold text-amber-400 font-mono-code uppercase">Option B • Connexion Directe MAAT OS</div>
                 <h3 className="text-xl font-bold text-white">Identifiants MAAT Unique</h3>
                 <p className="text-xs text-slate-400">Connectez-vous directement sans quitter l'interface Studio.</p>
               </div>

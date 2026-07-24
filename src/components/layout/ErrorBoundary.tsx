@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('MAAT Studio AI Error Boundary caught an error:', error, errorInfo);
+    console.error('MAAT OS Error Boundary caught an error:', error, errorInfo);
   }
 
   private handleReset = () => {
@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-xl font-extrabold text-white">MAAT Studio AI™</h2>
+              <h2 className="text-xl font-extrabold text-white">MAAT OS™</h2>
               <p className="text-sm text-slate-300">
                 Une interruption temporaire a été détectée dans l'interface.
               </p>

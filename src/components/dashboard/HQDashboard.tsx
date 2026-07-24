@@ -83,7 +83,7 @@ export const HQDashboard: React.FC<HQDashboardProps> = ({
             <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
               {isAuthenticated
                 ? `Bonjour ${userNameDisplay}. Voici le statut de votre organisation aujourd'hui.`
-                : `Bienvenue sur MAAT Studio AI. Votre système d'exploitation d'entreprise.`}
+                : `Bienvenue sur MAAT OS. Votre système d'exploitation d'entreprise.`}
             </h1>
 
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-slate-300 text-sm leading-relaxed space-y-2">

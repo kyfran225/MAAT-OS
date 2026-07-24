@@ -26,9 +26,9 @@ from app.services.maatfeed_service import maatfeed_service
 from app.services.workflow_service import workflow_engine
 
 app = FastAPI(
-    title="MAAT Studio AI - Backend Agent Core API",
+    title="MAAT OS - Backend Agent Core API",
     version="2.5.0",
-    description="API Moteur Cognitif & Conseil d'Administration IA pour MAAT Studio AI"
+    description="API Moteur Cognitif & Conseil d'Administration IA pour MAAT OS"
 )
 
 # CORS configuration for frontend connection
@@ -49,7 +49,7 @@ def get_user_id(x_user_id: Optional[str] = Header(None), user_id: Optional[str] 
 def read_root():
     return {
         "status": "online",
-        "system": "MAAT Studio AI Backend Core",
+        "system": "MAAT OS Backend Core",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "2.5.0"
     }
@@ -170,35 +170,6 @@ def create_mission(
     user_store.update_decision_logs(uid, current_logs)
 
     return new_mission
-
-@app.put("/api/v1/missions/{mission_id}/step")
-def toggle_mission_step(
-    mission_id: str,
-    req: ToggleStepRequest,
-    x_user_id: Optional[str] = Header(None),
-    user_id: Optional[str] = Query(None)
-):
-    uid = get_user_id(x_user_id, user_id)
-    user_data = user_store.get_or_create_user_data(uid)
-    missions = user_data["missions"]
-
-    updated_mission = None
-    for m in missions:
-        if m["id"] == mission_id:
-            for s in m["planSteps"]:
-                if s["id"] == req.stepId:
-                    s["status"] = "completed" if s["status"] != "completed" else "in_progress"
-            
-            completed_count = sum(1 for s in m["planSteps"] if s["status"] == "completed")
-            m["progress"] = int((completed_count / len(m["planSteps"])) * 100) if m["planSteps"] else 0
-            updated_mission = m
-            break
-
-    if not updated_mission:
-        raise HTTPException(status_code=404, detail="Mission introuvable")
-
-    user_store.update_missions(uid, missions)
-    return updated_mission
 
 @app.get("/api/v1/logs")
 def get_decision_logs(x_user_id: Optional[str] = Header(None), user_id: Optional[str] = Query(None)):
@@ -519,4 +490,3 @@ def create_onboarding(request: dict, x_user_id: Optional[str] = Header(None), us
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-

@@ -36,7 +36,7 @@ const STEPS = [
 ];
 
 const AI_QUOTES: Record<number, { agent: string; avatar: string; text: string }> = {
-  1: { agent: 'CEO Agent', avatar: '🎯', text: 'Bienvenue dans MAAT Studio AI. Je suis votre CEO Agent. Personnalisons votre OS pour qu\'il devienne votre extension digitale.' },
+  1: { agent: 'CEO Agent', avatar: '🎯', text: 'Bienvenue dans MAAT OS. Je suis votre CEO Agent. Personnalisons votre OS pour qu\'il devienne votre extension digitale.' },
   2: { agent: 'Founder Twin™', avatar: '🧠', text: 'Votre vision est le code source de l\'IA. Définissez vos ambitions pour que chaque agent agisse comme vous le feriez.' },
   3: { agent: 'Creative Director', avatar: '🎨', text: 'L\'interface doit refléter votre puissance de marque. Choisissez une ambiance qui inspire la confiance.' },
   4: { agent: 'Compliance Agent', avatar: '⚖️', text: 'Les "Non-Négociables" sont les garde-fous de l\'OS. Ils garantissent que l\'IA ne déviera jamais de votre éthique.' },
@@ -147,7 +147,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">{currentStepData.label}</h2>
-                <p className="text-xs text-slate-400">Étape {step} sur 5 • Configuration MAAT Studio AI</p>
+                <p className="text-xs text-slate-400">Étape {step} sur 5 • Configuration MAAT OS</p>
               </div>
             </div>
 
@@ -159,7 +159,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
                       <Zap className="w-4 h-4" /> Prêt pour le décollage ?
                     </h3>
                     <p className="text-xs text-slate-300 leading-relaxed">
-                      MAAT Studio AI n'est pas un simple logiciel. C'est une extension de votre cerveau de fondateur.
+                      MAAT OS n'est pas un simple logiciel. C'est une extension de votre cerveau de fondateur.
                       Prenez 2 minutes pour lui donner votre ADN stratégique.
                     </p>
                   </div>
@@ -230,7 +230,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
                   <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-4">
                     <Layout className="w-8 h-8 text-cyan-400" />
                     <p className="text-[11px] text-slate-400 leading-tight">
-                      MAAT Studio adaptera dynamiquement ses composants visuels à votre code couleur pour une immersion totale.
+                      MAAT OS adaptera dynamiquement ses composants visuels à votre code couleur pour une immersion totale.
                     </p>
                   </div>
                 </div>
